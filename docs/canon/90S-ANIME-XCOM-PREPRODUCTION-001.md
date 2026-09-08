@@ -5,6 +5,8 @@ Date: 2026-09-08
 Creative direction: Juan + Mina  
 Working title: TBD
 
+**Read `CANON-INDEX.md` first.** It carries the authority order, the status taxonomy, the current blockers, and the change protocol. Visual conflicts resolve through `../../art/ART-MANIFEST.md`; rulings made after this document was written live in `CANON-DECISIONS.md`.
+
 ## 1. What this project is trying to become
 
 A premium-feeling, story-driven tactical RPG about three women who inherit the wreckage of a once-perfect combat team. None is the leader. Their rivalry, distrust, decisions, and battlefield actions gradually turn three dangerous individuals into a single lethal unit.
@@ -53,9 +55,14 @@ Hand-painted asymmetry and analog artifacts are intentional. Extra fingers, drif
 
 ## 3. Reference-image reading
 
+> **Status note (2026-09-08).** This section records the reading of the *early moodboard*
+> references that founded the project. It is **not** current character canon. Approved character
+> art and its status live in `../../art/ART-MANIFEST.md`, which governs every visual conflict.
+> Individual superseded lines are marked below.
+
 ### Reference 01 — white-haired human protagonist
 
-- White/silver hair, glamorous editorial silhouette, black reflective dress, feathered or particulate outer texture.
+- ~~White/silver hair, glamorous editorial silhouette, black reflective dress, feathered or particulate outer texture.~~ **SUPERSEDED.** The approved character wears a clean black tactical costume — glossy bustier, strap harness, wide belt, leggings, thigh rig, boots, and a draped open jacket — with **no fur, feathers or particulate texture of any kind**. See `art/HERO-definitive-trio-002.png` and `CANON-DECISIONS.md` CD-0007.
 - Surrounded by stacked CRTs and cables; surveillance, performance, and mediated identity.
 - Palette: magenta/purple skin light, cyan-green monitors, deep black architecture.
 - The only fully human member of the definitive trio.
@@ -402,6 +409,19 @@ Each UI screen must pass:
 
 The final commercial vertical slice should be 15–20 minutes and replayable, containing one meaningful branch. Before that, the prologue itself becomes the first major playable production target because it demonstrates the end-state fantasy and the wound that drives the campaign.
 
+> **Sequencing clarification (2026-09-08).** "First major production target" and the small
+> scenario in `90S-ANIME-XCOM-CODEX-CLAUDE-BRIEF-001.md` §20 are **two different firsts**, not a
+> contradiction:
+>
+> - The **small representative scenario** is the first *internal engineering and combat proof*. It
+>   validates the thesis and needs no finished art.
+> - The **prologue** is the first *major narrative production target* and the public-facing
+>   vertical-slice component described below.
+>
+> Both remain on the plan. Direction: prove the scenario before building the prologue — the
+> prologue additionally requires two more canonical characters, a costume state change, and a
+> working Limit Break system. (`CANON-DECISIONS.md` CD-0009.)
+
 ### Prologue slice
 
 1. Briefing from the operator with the original human leader present.
@@ -440,7 +460,7 @@ Success is not “lots of content.” Success is that a player can describe the 
 - Decide the central conflict and why battles occur on tactical maps.
 - Approve one shared-world palette and material sheet.
 - Produce strict character model sheets from the three references.
-- Maintain a versioned canonical-art manifest for both the original and definitive teams.
+- Maintain a versioned canonical-art manifest for both the original and definitive teams. **Established: `../../art/ART-MANIFEST.md`.** Both team hero images are entered and statused; the synthetic's orthographic sheet is the only character sheet that exists so far.
 
 ### Phase 1 — three proof images
 

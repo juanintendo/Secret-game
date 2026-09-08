@@ -11,9 +11,13 @@ This document gives a technical or design consultant enough verified context to 
 
 Authority order:
 
+0. `CANON-INDEX.md` is the mandatory first read — authority order, status taxonomy, blockers, change protocol.
 1. `STORY-CANON-001.md` governs narrative truth and character knowledge.
 2. `90S-ANIME-XCOM-PREPRODUCTION-001.md` governs the founding product, visual, combat, and production direction.
 3. This document governs the newly defined progression/combat-class direction and the consulting questions needed to turn the concept into a prototype.
+4. `../../art/ART-MANIFEST.md` governs **visual truth**. Where prose here conflicts with an image labelled `CANONICAL` there, the image governs and this text is corrected.
+5. `MINA-CONSULTATION-ADDENDUM-001.md` carries Juan-approved direction issued after this document was written.
+6. `CANON-DECISIONS.md` is the append-only ledger of rulings. A later entry supersedes the specific statement it names.
 
 Do not import facts from Juan's unrelated beat'em-up, House, Ozymandias, Spell Out, or Arcadio projects.
 
@@ -74,6 +78,14 @@ The production target is a shared character truth:
 
 ## 3. Canonical teams
 
+> **These are summaries of canonical art.** `../../art/ART-MANIFEST.md` governs appearance and is
+> the only place an image's status is assigned. Three points it settles that were previously
+> disputed and are now settled: the synthetic's inherited red jacket is **present and confirmed** in
+> definitive-era art (CD-0006); the white-haired human's black costume is **canon as drawn** and
+> contains none of the prohibited trim (CD-0007); the cyborg's arms are **bilateral, symmetric and
+> mechanical from the elbow** (CD-0008). Every principal now has an orthographic sheet — **except
+> that the original leader has only her armored state**, which the prologue's costume change needs.
+
 ### 3.1 Original team — prologue
 
 - Original human leader: fully human, green hair, external white/gray AI-assisted armor, short fitted red bomber jacket. Uses a tactical AI copilot but retains judgment and final field authority.
@@ -120,6 +132,12 @@ The three protagonists have distinct primary axes:
 | Cyborg mech pilot | Strength | Absorb, break, intercept, reposition threats, or deliver heavy force through herself and the mech |
 | Luminous synthetic | Intellect | Invade systems, manipulate conditions and initiative, weaponize electricity, and create conditional support windows |
 
+**One axis per character, across all of her Specialties.** The white-haired human's Dispatch, Con
+Girl and Gunslinger all scale through **Agility**. All three cyborg Specialties scale through
+**Strength**. All three synthetic Specialties scale through **Intellect**. No Specialty scales off
+another character's axis, and **no new attribute is introduced for any Specialty** — see §7.2.
+(`CANON-DECISIONS.md` CD-0005.)
+
 Primary attributes should drive identity, not become universal gear-score colors. A provisional stat family for testing:
 
 - **Strength:** impact, stagger, brace, heavy-weapon handling, forced movement resistance.
@@ -127,6 +145,12 @@ Primary attributes should drive identity, not become universal gear-score colors
 - **Intellect:** system penetration, status potency, conditional duration, prediction, tactical resource manipulation.
 - **Resolve:** resistance to panic, control, intrusion, and synchronization disruption.
 - **Integrity:** health/structural durability; fiction and recovery presentation differ by human, cyborg, and synthetic.
+
+> **OPEN — blocks the kernel.** `Integrity` is used as a primary attribute here and as the damage
+> pool in §10. One name, two objects. This must be ruled before the kernel is written, because it
+> determines the schema, the UI and the balance model. It is **not** resolved in this document; the
+> consultation's proposal (attribute `Frame`, pool `Integrity`) is a recommendation only.
+> `CANON-INDEX.md` §11 blocker 1. One of only three rulings that block the combat kernel.
 
 Derived stats may include initiative, accuracy, crit, guard, stagger, focus, status resistance, hacking defense, movement, and reaction capacity. Keep the visible sheet small enough to forecast outcomes without spreadsheet archaeology.
 
@@ -186,7 +210,14 @@ Mechanical territory:
 
 Anti-pattern: a generic rogue who only stacks crit and backstab multipliers.
 
-### 7.2 Con Girl — Charisma control and manipulation
+### 7.2 Con Girl — deception, provocation and manipulation
+
+**Scaling attribute: Agility.** "Charisma" names this Specialty's character quality and combat
+fantasy, **not an attribute**. There is no Charisma stat and none is to be added. Agility governs
+Con Girl's numerical outputs — effect potency, application probability where probability exists,
+duration, damage, initiative manipulation. Charisma is expressed instead through deception,
+provocation, leverage, behavioural manipulation, animation, dialogue, targeting rules and
+crowd-control effects. (`CANON-DECISIONS.md` CD-0004, CD-0005.)
 
 Fantasy: make enemies misread intention, position, allegiance, or priority.
 
@@ -398,13 +429,24 @@ Talents must expose synergy tags and triggers. Do not encode every cross-charact
 
 Gear expands expression without erasing identity.
 
-Recommended slots to prototype:
+**Settled structure — `1 weapon + 4 gear`** (`CANON-DECISIONS.md` CD-0011):
 
-- signature weapon/hardpoint;
+- **One separate weapon slot** per protagonist, carrying a **character-specific weapon class**. Weapons are not interchangeable between protagonists.
+- **Exactly four gear slots** per protagonist.
+- **Only the four gear pieces participate in set bonuses.** The weapon **never** counts toward a two-piece or four-piece threshold.
+- A character may combine **two different two-piece bonuses**, or complete **one four-piece set**.
+- **`mech-hardpoint`, if retained, occupies one of the cyborg's four gear slots.** It is not a fifth gear slot and not a sixth equip position.
+- Final cinematics always use the authored **canonical visual loadout**, regardless of what is equipped.
+
+The five categories listed below were the original proposal. **They reconcile only as `1 weapon + 4 gear` — never as `5 gear + weapon`:** `signature weapon` is the separate weapon slot, and the remaining four are the gear slots.
+
+- signature weapon/hardpoint — **the weapon slot; outside the set system**;
 - armor/frame component;
 - utility module;
 - character-specific signature slot;
-- mech hardpoints for the cyborg only.
+- mech hardpoints for the cyborg only — **her fourth gear slot, not an addition**.
+
+`OPEN QUESTION`: the four gear slot **names** are not yet decided, and neither is whether ordinary gameplay visually displays equipped gear. Neither blocks the combat kernel.
 
 Gear can:
 
@@ -425,6 +467,11 @@ Prefer fewer named components with visible mechanical consequences and controlle
 ## 13. Canonical character-consistency pipeline
 
 ### 13.1 Character source package
+
+**Current state: one exists.** `art/SHEET-synthetic-orthographic-001.png` gives the luminous
+synthetic her orthographic front/profile/back on a shared height guide. The white-haired human, the
+cyborg, the original leader, Operator and the mech have none. **The cyborg's is the urgent one** —
+hers is `art/SHEET-cyborg-field-001.png`, and it closed the arm-topology question (`CANON-DECISIONS.md` CD-0008). The **original leader** is now the urgent gap: only her armored state is drawn, and the prologue requires a costume state change.
 
 Every principal character needs a versioned identity package:
 
@@ -540,11 +587,11 @@ Gameplay logic must never depend on Timeline clips or animation completion to de
 
 ### Gate 0 — identity and documentation lock
 
-- finish canonical sheets for every current principal character;
-- establish canonical artwork manifest and revision naming;
+- finish canonical sheets for every current principal character — **one of six exists** (the synthetic's; see §13.1);
+- ~~establish canonical artwork manifest and revision naming~~ — **done, 2026-09-08:** `../../art/ART-MANIFEST.md`;
 - settle working names or stable codenames;
-- review this brief with Claude/Codex as adversarial consultants;
-- decide only the smallest unresolved rules needed for the first prototype.
+- ~~review this brief with Claude/Codex as adversarial consultants~~ — **done:** `../consult/CONSULT-CLAUDE-001.md` (recommendations, not canon);
+- decide only the smallest unresolved rules needed for the first prototype — **exactly three rulings block the combat kernel; they are listed in `CANON-INDEX.md` §11.**
 
 ### Gate 1 — headless combat kernel
 
@@ -656,6 +703,12 @@ The consultant must label assumptions, distinguish settled canon from recommenda
 - platform scope beyond PC-first.
 
 ## 20. Current next objective
+
+> **Sequencing clarification (2026-09-08).** The scenario below is the first *internal engineering
+> and combat proof*. The prologue (`90S-ANIME-XCOM-PREPRODUCTION-001.md` §13) is the first *major
+> narrative production target* and the public-facing vertical-slice component. These are two
+> different firsts, not a contradiction. Both remain on the plan; direction is to prove this
+> scenario before building the prologue. (`CANON-DECISIONS.md` CD-0009.)
 
 Do not begin by implementing three full talent trees per character. The immediate objective is to build and evaluate one small combat scenario that demonstrates the entire thesis:
 

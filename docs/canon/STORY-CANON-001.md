@@ -16,6 +16,11 @@ This document separates four kinds of knowledge:
 
 When this file conflicts with narrative material in `90S-ANIME-XCOM-PREPRODUCTION-001.md`, this file governs story canon. The preproduction document continues to govern technical, visual, combat, and production direction unless explicitly superseded.
 
+**Read `CANON-INDEX.md` first.** It carries the full authority order, the status taxonomy, the current blockers, and the change protocol. Two rules from it apply directly to this document:
+
+- **Appearance descriptions here are summaries of canonical art.** Where a description below conflicts with an image labelled `CANONICAL` in `../../art/ART-MANIFEST.md`, the image governs and the text is corrected.
+- **Rulings made after this document was written live in `CANON-DECISIONS.md`** and supersede the specific statements they name.
+
 ## 1. Core dramatic premise
 
 The story follows the destruction and eventual reformation of an elite three-woman tactical unit.
@@ -55,6 +60,7 @@ Open:
 Status: settled authorial canon except where marked open.
 
 - Her current canonical appearance uses long layered blonde hair, mechanical forearms/hands, and practical blue-gray field clothing. The earlier dark-haired reference is no longer current hair canon.
+- **Arm topology is settled by her orthographic sheet:** both arms are mechanical **from the elbow** — dark articulated elbow assembly, white plated forearm, dark wrist cuff with a cyan indicator, five-digit hand — and the construction is **symmetric** left and right. "Mechanical forearms/hands" above is the precise phrasing. Whether the prosthetics are integrated or removable remains open. See `../../art/ART-MANIFEST.md` entry 4 and `CANON-DECISIONS.md` CD-0008.
 - She is a cyborg, not a full synthetic.
 - She is the only principal character with a mech.
 - Her tactical spectrum is tank, disruption/crowd control, breach, interception, and heavy DPS.
@@ -83,7 +89,7 @@ Status: settled authorial canon except where marked open.
 - The original intrusion creates a specific psychological and technical trauma around agency, internal systems, and remote access.
 - Her primary attribute axis is Intellect and her tactical verb direction is Rewrite / Conduct.
 - Her current Specialty directions are: Heartless invasive lightning damage; hacking/biohacking crowd control; and conditional spell-slinger support inspired by the original leader.
-- In the definitive-team timeline, she wears the original human leader's short fitted red bomber jacket.
+- In the definitive-team timeline, she wears the original human leader's short fitted red bomber jacket. Confirmed in current art, and **design-identical** to the leader's — same cut, same ribbed cuffs and hem, same black rectangular right-sleeve patch, same cyan-dotted zipper tape. The inheritance is visually verifiable, not merely stated. (`CANON-DECISIONS.md` CD-0006.)
 
 Open:
 
@@ -136,8 +142,9 @@ Status: settled authorial canon except where marked open.
 - Physical direction: fluid agility, timing, improvisation, and looseness reminiscent of Spike Spiegel.
 - Tactical territory: mobility, feints, seduction/manipulation, flanking, evasion, and opportunistic precision.
 - Her primary attribute axis is Agility.
-- Her current Specialty directions are Dispatch (agile melee assassination), Con Girl (Charisma-driven manipulation/crowd control at a DPS tradeoff), and Gunslinger (mobile ranged execution).
-- Current definitive-team art uses short/tousled pale white-lavender hair and a clean black tactical outfit without fur, feathers, or production-hostile trim.
+- Her current Specialty directions are Dispatch (agile melee assassination), Con Girl (manipulation/crowd control at a DPS tradeoff), and Gunslinger (mobile ranged execution).
+- **All three of her Specialties scale through Agility.** Con Girl expresses charisma through deception, provocation, leverage, behavioural manipulation, animation, dialogue, targeting rules and crowd-control effects — it is a character quality and a combat fantasy, **not a fourth attribute**. Charisma is not on the stat sheet. (`CANON-DECISIONS.md` CD-0004, CD-0005.)
+- Current definitive-team art uses short/tousled pale white-lavender hair and a clean black tactical outfit without fur, feathers, or production-hostile trim. The costume is canon as drawn: straps, an open draped jacket, fitted clothing and boots are **not** the prohibited trim, which means fur, feathers, fuzz and uncontrolled particulate. Their production costs are assigned in `../../art/ART-MANIFEST.md`, not treated as grounds for simplification. (`CANON-DECISIONS.md` CD-0007.)
 - She resists being treated as the missing leader's replacement.
 
 Open:
