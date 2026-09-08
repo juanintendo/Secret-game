@@ -1,0 +1,46 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+*.csproj
+*.unityproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+sysinfo.txt
+*.apk
+*.aab
+*.unitypackage
+*.app
+.vs/
+.vsconfig
+.idea/
+.gradle/
+ExportedObj/
+crashlytics-build.properties
+
+# Generated content mirrors (regenerable from content/ JSON)
+Assets/Generated/
+Assets/Generated.meta
+
+# Test + capture output
+TestResults/
+captures/
+golden-diff/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
