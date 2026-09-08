@@ -94,7 +94,7 @@ Conditions carry a `cause` field (`EnemyAdvance` | `AllyAction` | `SelfMove`). P
 
 ## 9. Damage and uncertainty
 
-- **Recommended and currently assumed: no to-hit roll for protagonists.** Damage is a computed integer shown exactly before commitment. *(This is a consultant recommendation, not accepted canon — confirm before it hardens. See `canon-guard` §4.)*
+- **Accepted for v0: no to-hit roll.** Damage, conditions and displacement are deterministic and shown before commitment. Any future hybrid experiment belongs on an experimental branch and requires an explicit ruling before entering the kernel.
 - Uncertainty is relocated to information the player can *work on*: enemy intent, threatened tiles, unscanned enemies, and whether an enemy still holds a reaction. Not dice.
 - Damage depletes **Guard** first, then **Integrity**. `Piercing` attacks bypass Guard — this is the main enemy-design lever against turtling.
 - The forecast must show: exact damage, resulting Guard/Integrity, displacement path, resulting turn-order rail, and **which conditional windows this action opens or closes**. That last line is the game's signature UI element.

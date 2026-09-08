@@ -12,8 +12,9 @@ You are working on a premium story-driven tactical RPG about three women rebuild
 1. `docs/canon/STORY-CANON-001.md` — narrative truth, chronology, secrets, character knowledge.
 2. `docs/canon/90S-ANIME-XCOM-PREPRODUCTION-001.md` — founding product, combat, visual, technical, production direction.
 3. `docs/canon/90S-ANIME-XCOM-CODEX-CLAUDE-BRIEF-001.md` — combat progression, Specialties, Personal talents, recovery philosophy, cinematic-consistency pipeline.
-4. `docs/consult/CONSULT-CLAUDE-001.md` — consultant analysis. **Recommendations, not canon.** Anything in it is a proposal until Juan or Mina accepts it.
-5. Approved art in `docs/canon/art/` — canonical *reference*, but see §5: it currently conflicts with the text in three places.
+4. `docs/canon/CANON-DECISIONS.md` — accepted rulings with evidence and status.
+5. `docs/consultation/` — final consultation and handoff. Recommendations are non-canon until accepted in the decision ledger.
+6. Approved art indexed by `art/ART-MANIFEST.md`.
 
 **When sources conflict: report the conflict, cite both, follow the authority order, and keep going. Never silently pick a middle value.**
 
@@ -55,22 +56,16 @@ You are working on a premium story-driven tactical RPG about three women rebuild
 
 Narrative: the leader's surviving form; the attacker's identity and objective; why the white-haired recruit is uniquely required; whether restored Operator is continuous/forked/compromised; HQ's nature and location; the leader's name/age/class; the gap duration.
 
-Production: working title; character names/codenames; final Specialty and verb names; the initiative clock math; the AP/reaction economy; the Remote Arsenal command model; Integrity/Guard/Wound rules; tree size and respec rules; gear slot count; Heartless's cost to the synthetic; enemy families; spike target hardware; the 2D/3D balance for S-tier; platform scope beyond PC.
+Production: working title; character names/codenames; final Specialty and verb names; the initiative clock math; the AP/reaction economy; the Remote Arsenal command model; tree size and respec rules; gear-slot names; ordinary gameplay gear visibility; Heartless's cost to the synthetic; enemy families; spike target hardware; the 2D/3D balance for S-tier; platform scope beyond PC.
 
-## 5. KNOWN CONFLICTS — art vs. text (unresolved as of 2026-09-08)
+## 5. Resolved visual rulings
 
-Do not "fix" these by choosing. Flag them and ask.
+The former three art/text conflicts are closed. Use the manifest's current approved sheets: the white-haired human uses the buildable black field costume; the Synthetic inherits the red jacket as a controlled optional garment with cinematic override; the cyborg has two human upper arms and two mechanical forearms/hands. Do not reopen these from superseded hero art.
 
-| # | Conflict | Sources | Why it costs money |
-| --- | --- | --- | --- |
-| A1 | **White-haired human's costume.** Text says "clean black tactical outfit without production-hostile trim." Older text says "black reflective dress, feathered/particulate texture." The hero art shows a black glamour bodysuit with garter straps, an open off-shoulder jacket, and heeled thigh-high boots. | CODEX-BRIEF §3.2, STORY-CANON §3.1, PREPRO §3 Ref 01, `art/HERO-definitive-trio-001.png` | She is the most animated character. Garter straps + separate jacket + heeled boots is exactly the "production-hostile trim" the brief forbids: cloth budget, foot IK on elevation, silhouette mush at gameplay scale. |
-| A2 | **Synthetic's red bomber jacket.** Text makes the leader's red bomber jacket definitive-timeline canon for her. The current hero art shows her without it. | STORY-CANON §2.3, CODEX-BRIEF §3.2, `art/HERO-definitive-trio-001.png` | Determines whether she has *any* cloth. Without the jacket her entire costume is a shader — the cheapest character in the cast. |
-| A3 | **Cyborg's arms.** Text says "mechanical forearms/hands" (symmetric). Hero art shows an apparently full right arm to the shoulder plus a left mechanical hand/forearm (asymmetric). | STORY-CANON §2.2, CODEX-BRIEF §3.1, `art/HERO-definitive-trio-001.png` | Determines rig, IK, and whether her signature mechanical-arm counter is one characterful clip or a mirrored system. |
+## 6. Accepted terminology rulings
 
-## 6. Terminology collisions to raise (not to silently rename)
-
-- **`Integrity`** is used both as a primary attribute ("structural durability", CODEX-BRIEF §5) and as the health pool (§10). One name, two things. Data, UI, and balance conversations will suffer. Proposed fix (unaccepted): attribute = `Frame`, pool = `Integrity`.
-- **`Charisma`** drives Con Girl (CODEX-BRIEF §7.2, STORY-CANON §3.1) but is not in the attribute list (§5: Strength/Agility/Intellect/Resolve/Integrity). Either it is a sixth attribute or Con Girl scales off something else. This blocks the ability schema's `scalingAttribute` enum.
+- **`Integrity`** exclusively names the damage/health pool. It is not a visible attribute and is not renamed to `Frame`.
+- The visible attributes are Strength, Agility, Intellect and Resolve. Con Girl scales through Agility plus authored mechanics; `Charisma` is not added as a sixth attribute.
 
 ## 7. Character quick reference
 

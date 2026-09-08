@@ -6,13 +6,17 @@ Creative direction: Juan + Mina. Technical direction: Mina.
 
 ## Status
 
-Pre-production. No engine code yet. Engine recommendation (Unity 6 LTS + URP) is **provisional** until the two-week technical-art spike passes.
+Implementation spike in progress. The engine-free deterministic simulation began on 2026-09-09; Unity 6 LTS + URP remains **provisional** until the technical-art spike passes.
 
 ## Layout
 
 ```
 docs/canon/      Source-of-truth documents (authority order below) + approved art
 docs/consult/    External consultant analysis — recommendations, not canon
+docs/consultation/ Final preproduction consultation and implementation handoff
+docs/implementation/ Implementation milestones and accepted technical rulings
+src/             Engine-free simulation source
+tests/           Executable simulation verification harnesses
 docs/pipeline/   Production pipeline artifacts (perf budgets, swatches, shot registry)
 .claude/skills/  Project skills that load the canon and the working rules into any agent session
 CLAUDE.md        Agent entry point and skill routing
@@ -23,7 +27,8 @@ CLAUDE.md        Agent entry point and skill routing
 1. `docs/canon/STORY-CANON-001.md`
 2. `docs/canon/90S-ANIME-XCOM-PREPRODUCTION-001.md`
 3. `docs/canon/90S-ANIME-XCOM-CODEX-CLAUDE-BRIEF-001.md`
-4. `docs/consult/CONSULT-CLAUDE-001.md` (recommendations only)
+4. `docs/canon/CANON-DECISIONS.md`
+5. `docs/consultation/` (recommendations and handoff; accepted rulings are recorded separately)
 
 Conflicts are reported and cited, never silently averaged.
 
@@ -31,6 +36,16 @@ Conflicts are reported and cited, never silently averaged.
 
 Any Claude Code session should invoke the `canon-guard` skill first. See `CLAUDE.md`.
 
-## Note on duplicated canon
+## First executable milestone
 
-`docs/canon/*.md` were copied from `~/Documents/DD90s/` on 2026-09-08 and were byte-identical at that time. **Pick one home.** The recommendation is that this repo becomes the single source of truth and the `DD90s` copies are retired, otherwise the two will diverge silently.
+With .NET 8 installed:
+
+```powershell
+dotnet run --project tests/SecretGame.Simulation.Tests
+```
+
+The harness currently verifies integer rectangular footprints, stable pilot/mech identities across deployment modes, deterministic state hashing, and bounded Integrity damage. The simulation boundary check is `scripts/check-simulation-boundary.sh` on Bash-capable CI runners.
+
+## Canon home
+
+The repository is now the maintained source of truth. `DD90s` was the preproduction staging location and must not be edited as a competing canon home.

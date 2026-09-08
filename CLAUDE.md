@@ -4,7 +4,7 @@ A premium story-driven tactical RPG: three women rebuild a destroyed combat unit
 
 ## Read this first, every session
 
-**Invoke the `canon-guard` skill before doing anything on this project.** It holds the authority order, the binding canon, the deliberately-open questions, and the three unresolved art-vs-text conflicts. Working without it produces confidently wrong output.
+**Invoke the `canon-guard` skill before doing anything on this project.** It holds the authority order, binding canon, accepted closeout decisions, and remaining open questions.
 
 ## Skill routing
 
@@ -22,14 +22,15 @@ A premium story-driven tactical RPG: three women rebuild a destroyed combat unit
 1. `docs/canon/STORY-CANON-001.md` — narrative truth
 2. `docs/canon/90S-ANIME-XCOM-PREPRODUCTION-001.md` — founding product, combat, visual, production
 3. `docs/canon/90S-ANIME-XCOM-CODEX-CLAUDE-BRIEF-001.md` — progression, Specialties, recovery, pipeline
-4. `docs/consult/CONSULT-CLAUDE-001.md` — **recommendations only**, not canon, until Juan or Mina accepts them
+4. `docs/canon/CANON-DECISIONS.md` — accepted rulings and their evidence
+5. `docs/consultation/` — final consultation and handoff; recommendations remain non-canon unless accepted in the decision ledger
 
 Conflicts get **reported and cited**, never silently averaged.
 
 ## The rules that get violated most
 
 - **Do not import** from Juan's other projects (beat'em-up, House, Ozymandias, Spell Out, Arcadio).
-- **Do not resolve open questions.** Propose; do not decide.
+- **Do not resolve owner-gated questions.** Implement rulings already accepted in `CANON-DECISIONS.md` and `docs/implementation/`.
 - **Do not rename** characters, Specialties, or verbs except to report a real terminology collision.
 - **Label every suggestion as a recommendation.**
 - **The simulation is engine-free and deterministic.** `Game.Core`, `Game.Tactics`, `Game.Abilities`, `Game.Forecast`, and the AI's evaluation path must compile with no `UnityEngine` reference. No floats in the sim.
@@ -40,7 +41,9 @@ Conflicts get **reported and cited**, never silently averaged.
 
 ## Current state
 
-Pre-production. No engine code yet. The repo currently holds canon documents, the consultant analysis, and these skills.
+Implementation spike. The engine-free simulation lives in `src/SecretGame.Simulation`; its executable verification harness lives in `tests/SecretGame.Simulation.Tests`.
+
+Accepted implementation rulings: `Integrity` is the damage pool rather than a visible attribute; v0 has no to-hit roll; footprints are generic integer rectangles; the mech's `2×2` value remains a configurable spike hypothesis; pilot and mech always retain separate stable IDs; the kernel contains no engine or physical-scale types.
 
 Immediate objective (per `docs/canon/90S-ANIME-XCOM-CODEX-CLAUDE-BRIEF-001.md` §20 and the consult's §14): **one compact combat scenario** that demonstrates the whole thesis — forecast, three distinct verbs, a deliberately constructed conditional rescue, forced movement, stance choice, earned recovery, a three-character handoff, and character identity preserved at gameplay distance. Do not start by building talent trees.
 
