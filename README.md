@@ -44,7 +44,7 @@ With .NET 8 installed:
 dotnet run --project tests/SecretGame.Simulation.Tests
 ```
 
-The harness currently verifies integer rectangular footprints, stable pilot/mech identities across deployment modes, deterministic state hashing, and bounded Integrity damage. The simulation boundary check is `scripts/check-simulation-boundary.sh` on Bash-capable CI runners.
+The harness verifies integer rectangular footprints, stable pilot/mech identities across deployment modes, deterministic state hashing, bounded Integrity damage, command validation, ordered events, replay, and exact forecast/result parity across a 500-pair corpus. The simulation boundary check is `scripts/check-simulation-boundary.sh` on Bash-capable CI runners.
 
 ## Canon home
 

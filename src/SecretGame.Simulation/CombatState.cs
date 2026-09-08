@@ -5,10 +5,12 @@ namespace SecretGame.Simulation;
 public sealed class CombatState
 {
     private readonly SortedDictionary<EntityId, CombatEntity> _entities;
+    private readonly List<ResolvedEvent> _events;
 
     public CombatState(IEnumerable<CombatEntity> entities)
     {
         _entities = new SortedDictionary<EntityId, CombatEntity>();
+        _events = new List<ResolvedEvent>();
         foreach (var entity in entities)
         {
             if (!_entities.TryAdd(entity.Id, entity))
@@ -17,13 +19,50 @@ public sealed class CombatState
     }
 
     public IReadOnlyDictionary<EntityId, CombatEntity> Entities => _entities;
+    public IReadOnlyList<ResolvedEvent> Events => _events;
 
-    public void SetPilotMechMode(EntityId pilotId, EntityId mechId, DeploymentMode mode)
+    public CombatState Clone()
     {
-        var pilot = Require(pilotId);
-        var mech = Require(mechId);
-        _entities[pilotId] = pilot with { Flags = mode == DeploymentMode.Docked ? EntityFlags.Docked : EntityFlags.Active };
-        _entities[mechId] = mech with { Flags = EntityFlags.Active };
+        var clone = new CombatState(_entities.Values);
+        clone._events.AddRange(_events);
+        return clone;
+    }
+
+    internal CombatEntity Require(EntityId id) =>
+        _entities.TryGetValue(id, out var entity)
+            ? entity
+            : throw new CommandRejectedException($"Unknown entity ID {id}.");
+
+    internal ResolvedEvent Apply(CombatEvent payload)
+    {
+        switch (payload)
+        {
+            case EntityMovedEvent moved:
+                _entities[moved.EntityId] = Require(moved.EntityId) with { Anchor = moved.To };
+                break;
+            case IntegrityDamagedEvent damaged:
+                var target = Require(damaged.TargetId);
+                _entities[damaged.TargetId] = target with
+                {
+                    Integrity = new IntegrityPool(damaged.After, target.Integrity.Maximum)
+                };
+                break;
+            case DeploymentModeChangedEvent deployment:
+                var pilot = Require(deployment.PilotId);
+                var mech = Require(deployment.MechId);
+                _entities[deployment.PilotId] = pilot with
+                {
+                    Flags = deployment.Mode == DeploymentMode.Docked ? EntityFlags.Docked : EntityFlags.Active
+                };
+                _entities[deployment.MechId] = mech with { Flags = EntityFlags.Active };
+                break;
+            default:
+                throw new InvalidOperationException($"Unsupported event type {payload.GetType().Name}.");
+        }
+
+        var resolved = new ResolvedEvent(_events.Count, payload, DeterministicHash());
+        _events.Add(resolved);
+        return resolved;
     }
 
     public string DeterministicHash()
@@ -51,8 +90,4 @@ public sealed class CombatState
         return Convert.ToHexString(SHA256.HashData(stream.ToArray()));
     }
 
-    private CombatEntity Require(EntityId id) =>
-        _entities.TryGetValue(id, out var entity)
-            ? entity
-            : throw new KeyNotFoundException($"Unknown entity ID {id}.");
 }
