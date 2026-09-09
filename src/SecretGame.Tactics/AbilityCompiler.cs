@@ -11,7 +11,7 @@ public sealed class AbilityCompiler
         EntityId targetId,
         CompassDirection displacementDirection = CompassDirection.North)
     {
-        ArgumentNullException.ThrowIfNull(ability);
+        if (ability is null) throw new ArgumentNullException(nameof(ability));
         var effects = ability.Effects.Select(effect => CompileEffect(effect, targetId, displacementDirection)).ToArray();
         return new EffectStackCommand(sourceId, ability.CostAp, effects);
     }

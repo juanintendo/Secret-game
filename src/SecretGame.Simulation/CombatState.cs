@@ -185,7 +185,21 @@ public sealed class CombatState
             }
         }
 
-        return Convert.ToHexString(SHA256.HashData(stream.ToArray()));
+        using var sha256 = SHA256.Create();
+        return ToUpperHex(sha256.ComputeHash(stream.ToArray()));
+    }
+
+    private static string ToUpperHex(byte[] bytes)
+    {
+        const string digits = "0123456789ABCDEF";
+        var characters = new char[bytes.Length * 2];
+        for (var index = 0; index < bytes.Length; index++)
+        {
+            characters[index * 2] = digits[bytes[index] >> 4];
+            characters[index * 2 + 1] = digits[bytes[index] & 0x0F];
+        }
+
+        return new string(characters);
     }
 
 }

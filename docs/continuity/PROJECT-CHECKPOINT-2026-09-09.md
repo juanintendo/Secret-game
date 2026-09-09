@@ -17,6 +17,7 @@
 - The first Windows attempt synchronized 31/31 kernel files, then exposed a PowerShell runner defect: direct invocation of the GUI editor left `$LASTEXITCODE` unset. Milestone 011 replaces that mechanism with an explicit waited process handle. This is not yet Unity test evidence.
 - The next waited run reached compilation and exposed one compatibility mismatch: Unity selected C# 9 while the kernel uses C# 10 syntax. Milestone 012 adds a pinned `-langversion:10.0` compiler-response probe; Unity tests remain pending until that probe runs on Windows.
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
+- The following Windows run resolved records and reduced compilation to four unavailable modern .NET APIs. Milestone 014 replaces them in the authoritative source with behavior-equivalent portable null checking, SHA-256 and uppercase hexadecimal encoding. Expected replay hashes are unchanged; Unity execution remains pending.
 
 ## Accepted architecture
 

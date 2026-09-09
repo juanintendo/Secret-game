@@ -6,8 +6,8 @@ public sealed class CombatResolver
 
     public CommandResult Resolve(CombatState state, CombatCommand command)
     {
-        ArgumentNullException.ThrowIfNull(state);
-        ArgumentNullException.ThrowIfNull(command);
+        if (state is null) throw new ArgumentNullException(nameof(state));
+        if (command is null) throw new ArgumentNullException(nameof(command));
 
         if (command is EffectStackCommand stack)
             return ResolveEffectStack(state, stack);
