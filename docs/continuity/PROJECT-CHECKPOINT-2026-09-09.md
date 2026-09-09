@@ -19,6 +19,7 @@
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
 - The following Windows run resolved records and reduced compilation to four unavailable modern .NET APIs. Milestone 014 replaces them in the authoritative source with behavior-equivalent portable null checking, SHA-256 and uppercase hexadecimal encoding. Expected replay hashes are unchanged; Unity execution remains pending.
 - The next .NET verification selected SDK 10 because the repo used `latest`, changing `array.Reverse()` overload binding in one test. Milestone 015 pins the .NET 8 patch band and C# 10, and makes the intended LINQ call explicit. No test executed in the failed run; both .NET harnesses and Unity remain to be rerun.
+- Windows Code Integrity then proved Smart App Control was blocking unsigned DLLs created by Unity Burst JIT under `Library/BurstCache/JIT`. Milestone 016 disables Burst only for the managed bootstrap test process; global Windows security remains enabled. Burst production use remains a later explicit decision.
 
 ## Accepted architecture
 

@@ -16,6 +16,7 @@ rg -qx -- '-langversion:10\.0' "$project/Assets/csc.rsp"
 rg -qx -- '-nullable:enable' "$project/Assets/csc.rsp"
 rg -q 'UnityIsExternalInit\.cs' scripts/sync-unity-kernel.ps1
 rg -q 'namespace System\.Runtime\.CompilerServices' scripts/sync-unity-kernel.ps1
+rg -q -- '--burst-disable-compilation' scripts/run-unity-bootstrap-windows.ps1
 
 while IFS= read -r -d '' assembly_definition; do
   jq empty "$assembly_definition"

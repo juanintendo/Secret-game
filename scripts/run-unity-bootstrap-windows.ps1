@@ -32,7 +32,8 @@ $unityArguments = @(
     "-runTests",
     "-testPlatform", "editmode",
     "-testResults", $resultPath,
-    "-logFile", $logPath
+    "-logFile", $logPath,
+    "--burst-disable-compilation"
 )
 
 # Unity.exe is a Windows GUI executable. Windows PowerShell may return from a
