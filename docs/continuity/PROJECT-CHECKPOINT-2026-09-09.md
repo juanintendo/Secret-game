@@ -18,6 +18,7 @@
 - Milestone 020 then passed on Windows at `787870695b889d2288677d93c668fd78cd254062`: Simulation **40/40**, the shared Charge/Board/Recharge/Deploy harness `PASS`, Unity **4/4**, clean synchronized branch. The data-only resource loop is accepted; its numeric inputs remain provisional.
 - Milestone 021 passed on Windows at `a82a7a45971d1ffe5621ed36652599635860ce07`: Simulation **46/46**, immediate remote-directive harness `PASS`, Unity **5/5**, clean synchronized branch. Option A is the retained prototype because no evidence yet justifies a temporal queue.
 - Milestone 022 core evidence passed at `7b4d3bec6c0a98d84a650d450a17c591ade3a291`: Simulation **50/50** and the three-policy comparison `PASS`. Smart App Control blocked only the generated Tactics apphost; the transcript ended before Unity returned. Milestone 023 carries a security-preserving managed-DLL runner and keeps both observations pending.
+- Milestone 023 managed evidence passed at `e44c69a906027106d97d9d0116d07aa46ca0654f`: Simulation **54/54**, Tactics **18/18**, and Specialty Pressure `PASS`. Unity synchronized **36/36** sources and began the final **7/7** run; its completed XML result is still pending capture.
 - The first Windows attempt synchronized 31/31 kernel files, then exposed a PowerShell runner defect: direct invocation of the GUI editor left `$LASTEXITCODE` unset. Milestone 011 replaces that mechanism with an explicit waited process handle. This is not yet Unity test evidence.
 - The next waited run reached compilation and exposed one compatibility mismatch: Unity selected C# 9 while the kernel uses C# 10 syntax. Milestone 012 adds a pinned `-langversion:10.0` compiler-response probe; Unity tests remain pending until that probe runs on Windows.
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
@@ -67,12 +68,12 @@ Do not:
 
 ## Immediate next objective
 
-1. Import and verify Milestone 023 on Juan's Windows checkout with the consolidated runner.
-2. Confirm all six stay/transition scripts remain forecast-identical across .NET and Unity.
-3. Retain the measured damage/prevention/exposure/Charge tradeoffs only if the table passes.
-4. Add one reusable attack-range definition before measuring threatened cells.
-5. Approve, revise or reject each policy only after spatial reach is measured too.
+1. Capture Milestone 023's completed Unity **7/7** XML result.
+2. Mark `TACTICAL-FOUNDATION-CHECKPOINT-001.md` accepted at the exact verified commit.
+3. Create an isolated visual-spike branch from that accepted foundation.
+4. Give Astra the bounded `ASTRA-VISUAL-HANDOFF-001.md` mission and build Visual Spike 001.
+5. Return to reusable attack range and threatened-cell measurement after the visual foundation exposes real camera, scale and clearance constraints.
 
 ## Resume prompt
 
-> Continue Secret-game from `docs/continuity/PROJECT-CHECKPOINT-2026-09-09.md`. Load canon-guard, combat-kernel, content-schema and adversarial-review. Verify branch and HEAD first. Do not treat `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` as canon. Milestone 023 compares stay-versus-transition pressure outcomes and includes a Smart App Control-safe managed test runner. Verify it on Windows, then add one reusable attack-range definition before measuring threatened cells.
+> Continue Secret-game from `docs/continuity/PROJECT-CHECKPOINT-2026-09-09.md`. Load canon-guard, combat-kernel, content-schema, visual-gate, unity-pipeline and adversarial-review. Verify branch and HEAD first. Do not treat `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` as canon. Milestone 023 managed evidence passed; capture Unity 7/7, accept the tactical checkpoint, then begin the bounded Astra Visual Spike 001. Do not expand character production before its verdict.

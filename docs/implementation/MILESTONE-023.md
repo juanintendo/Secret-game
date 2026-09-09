@@ -69,4 +69,4 @@ Accept only when Simulation passes **54/54**, Tactics **18/18**, the pressure ha
 
 ## Next decision
 
-If the table holds, the next experiment should introduce one reusable attack-range definition and measure threatened cells. Only then can the project judge whether Remote Arsenal's spatial reach compensates for its Charge and pilot-exposure costs.
+The table held in managed Windows execution. After the final Unity result is captured, the project opens Visual Spike 001 so camera, scale and animation-clearance evidence can inform the eventual spatial-range test. Reusable attack range and threatened-cell measurement remain the next combat experiment; they are deferred, not cancelled.
