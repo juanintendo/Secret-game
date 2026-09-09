@@ -37,6 +37,19 @@ foreach ($source in $sources) {
     }
 }
 
+# Unity 6.3's framework surface does not expose the compiler marker required
+# by init-only properties and record structs. Keep this host compatibility shim
+# in the generated mirror so the authoritative engine-free kernel stays clean.
+$isExternalInitShim = @'
+namespace System.Runtime.CompilerServices
+{
+    internal static class IsExternalInit
+    {
+    }
+}
+'@
+$isExternalInitShim | Set-Content -Encoding UTF8 (Join-Path $generatedRoot "UnityIsExternalInit.cs")
+
 $assemblyDefinition = @'
 {
   "name": "SecretGame.Simulation",
@@ -62,4 +75,5 @@ $manifest = foreach ($source in $sources) {
 $manifest | Set-Content -Encoding UTF8 (Join-Path $generatedRoot "unity-kernel-sync-manifest.txt")
 
 Write-Host "Unity kernel sync complete: $($sources.Count) source files, all SHA-256 matched."
+Write-Host "Unity compatibility shim generated: System.Runtime.CompilerServices.IsExternalInit."
 Write-Host "Generated destination: $generatedRoot"

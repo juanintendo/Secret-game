@@ -9,6 +9,9 @@ jq -e '.dependencies["com.unity.test-framework"] == "1.5.1"' \
   "$project/Packages/manifest.json" >/dev/null
 rg -qx 'm_EditorVersion: 6000\.3\.0f1' "$project/ProjectSettings/ProjectVersion.txt"
 rg -qx -- '-langversion:10\.0' "$project/Assets/csc.rsp"
+rg -qx -- '-nullable:enable' "$project/Assets/csc.rsp"
+rg -q 'UnityIsExternalInit\.cs' scripts/sync-unity-kernel.ps1
+rg -q 'namespace System\.Runtime\.CompilerServices' scripts/sync-unity-kernel.ps1
 
 while IFS= read -r -d '' assembly_definition; do
   jq empty "$assembly_definition"
