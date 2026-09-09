@@ -7,4 +7,9 @@ public sealed record CombatEntity(
     EntityFlags Flags,
     IntegrityPool Integrity,
     int NextActAt = 0,
-    int ActionInterval = 10);
+    int ActionInterval = 10)
+{
+    public Faction Faction { get; init; } = Faction.Player;
+    public int ActionPoints { get; init; } = 2;
+    public ConditionSet Conditions { get; init; } = ConditionSet.Empty;
+}

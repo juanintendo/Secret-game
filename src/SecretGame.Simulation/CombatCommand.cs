@@ -10,3 +10,13 @@ public sealed record SetDeploymentModeCommand(
     EntityId PilotId,
     EntityId MechId,
     DeploymentMode Mode) : CombatCommand;
+
+public sealed record BeginActivationCommand(EntityId EntityId) : CombatCommand;
+
+public sealed record EndActivationCommand(EntityId EntityId) : CombatCommand;
+
+public sealed record ApplyConditionCommand(
+    EntityId SourceId,
+    EntityId TargetId,
+    ConditionKind Kind,
+    int Duration) : CombatCommand;

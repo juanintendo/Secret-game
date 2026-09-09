@@ -20,6 +20,32 @@ public sealed record DeploymentModeChangedEvent(
     EntityId MechId,
     DeploymentMode Mode) : CombatEvent;
 
+public sealed record ActionPointsSpentEvent(
+    EntityId EntityId,
+    int Amount,
+    int Before,
+    int After) : CombatEvent;
+
+public sealed record ActionPointsRefreshedEvent(
+    EntityId EntityId,
+    int Before,
+    int After,
+    int PreviousNextActAt,
+    int NewNextActAt) : CombatEvent;
+
+public sealed record ActivationEndedEvent(EntityId EntityId) : CombatEvent;
+
+public sealed record ConditionAppliedEvent(
+    EntityId SourceId,
+    EntityId TargetId,
+    ConditionKind Kind,
+    int Duration) : CombatEvent;
+
+public sealed record ConditionsAdvancedEvent(
+    EntityId EntityId,
+    ConditionSet Before,
+    ConditionSet After) : CombatEvent;
+
 public sealed record ResolvedEvent(
     long Sequence,
     CombatEvent Payload,

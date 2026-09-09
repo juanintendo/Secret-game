@@ -46,6 +46,14 @@ dotnet run --project tests/SecretGame.Simulation.Tests
 
 The harness verifies deterministic spatial rules, rectangular footprints, stable pilot/mech identities, initiative queries, command validation, ordered events, replay, and exact forecast/result parity across a 500-pair corpus. The simulation boundary check is `scripts/check-simulation-boundary.sh` on Bash-capable CI runners.
 
+Run the current text-mode encounter with:
+
+```powershell
+dotnet run --project tools/SecretGame.RelayYard
+```
+
+The live transition criteria for Unity/Astra are tracked in `docs/implementation/GATE-A-CHECKLIST.md`.
+
 ## Canon home
 
 The repository is now the maintained source of truth. `DD90s` was the preproduction staging location and must not be edited as a competing canon home.

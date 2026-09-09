@@ -23,7 +23,18 @@ var tests = new (string Name, Action Run)[]
     ("diagonal movement cannot cut blocked corners", DiagonalCannotCutCorner),
     ("initial state rejects overlapping entities", InitialOverlapIsRejected),
     ("movement forecast includes the exact executed path", MovementForecastMatchesExecution),
-    ("map and movement rules participate in state hash", SpatialRulesAffectHash)
+    ("map and movement rules participate in state hash", SpatialRulesAffectHash),
+    ("two actions exhaust AP until activation refresh", ActionEconomyIsEnforced),
+    ("movement forecast reports closed isolation windows", ForecastReportsClosedConditions),
+    ("elevation forecast reports opened condition", ForecastReportsOpenedElevation),
+    ("applied and derived conditions remain separate", AppliedAndDerivedStaySeparate),
+    ("hostile adjacency derives Surrounded", SurroundedIsDerived),
+    ("initiative scheduler rejects out-of-order activation", ActivationOrderIsEnforced),
+    ("applied condition expires on owner activations", ConditionDurationAdvances),
+    ("Relay Yard script preserves forecast parity", RelayYardForecastParity),
+    ("Relay Yard replay is deterministic", RelayYardReplayIsDeterministic),
+    ("text renderer exposes tactical windows", TextRendererShowsWindows),
+    ("resolver rejects attacks through blocked LOS", ResolverEnforcesLineOfSight)
 };
 
 var failures = 0;
@@ -161,7 +172,7 @@ static void ForecastCorpusParity()
             new Footprint(index % 2 + 1, index % 3 + 1),
             EntityFlags.Active,
             new IntegrityPool(1000, 1000));
-        var state = new CombatState(OpenMap(), CombatRules.SpikeDefault, new[] { source, target });
+        var state = new CombatState(OpenMap(), CombatRules.SpikeDefault, new[] { source, target }, source.Id);
         var command = new DamageCommand(source.Id, target.Id, index);
         var predicted = forecast.Evaluate(state, command);
         var actual = resolver.Resolve(state, command);
@@ -188,8 +199,8 @@ static void ReplayDivergenceIsLocated()
     var expected = replay.Run(SampleState(), sharedOpening);
     var actual = replay.Run(SampleState(), changedSecondAction);
 
-    Assert(ReplayVerifier.FindFirstDivergence(expected.Events, actual.Events) == 1,
-        "Verifier did not identify the second resolved event.");
+    Assert(ReplayVerifier.FindFirstDivergence(expected.Events, actual.Events) == 3,
+        "Verifier did not identify the fourth resolved event.");
     Assert(ReplayVerifier.FindFirstDivergence(expected.Events, expected.Events) is null,
         "Verifier reported divergence for identical traces.");
 }
@@ -287,7 +298,7 @@ static void DiagonalCannotCutCorner()
         new TerrainTile(new Cell(0, 1), 0, true)
     });
     var entity = new CombatEntity(new EntityId(1), new Cell(0, 0), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
-    var state = new CombatState(map, CombatRules.SpikeDefault, new[] { entity });
+    var state = new CombatState(map, CombatRules.SpikeDefault, new[] { entity }, entity.Id);
 
     Assert(new GridPathfinder().FindPath(state, entity, new Cell(1, 1)) is null,
         "Diagonal path cut through two blocked corners.");
@@ -311,7 +322,7 @@ static void MovementForecastMatchesExecution()
 
     Assert(forecast.IsLegal, "Expected movement forecast to be legal.");
     Equal(forecast.Events, actual.Events);
-    var moved = (EntityMovedEvent)actual.Events[0].Payload;
+    var moved = (EntityMovedEvent)actual.Events[1].Payload;
     Assert(moved.Path.StepCount == 3, "Unexpected movement path length.");
 }
 
@@ -327,9 +338,158 @@ static void SpatialRulesAffectHash()
     Assert(cardinal.DeterministicHash() != terrainChanged.DeterministicHash(), "Map definition was absent from hash.");
 }
 
+static void ActionEconomyIsEnforced()
+{
+    var state = SampleState();
+    var resolver = Resolver();
+    resolver.Resolve(state, new DamageCommand(new EntityId(10), new EntityId(20), 1));
+    resolver.Resolve(state, new DamageCommand(new EntityId(10), new EntityId(20), 1));
+    Throws<CommandRejectedException>(() =>
+        resolver.Resolve(state, new DamageCommand(new EntityId(10), new EntityId(20), 1)));
+    resolver.Resolve(state, new EndActivationCommand(new EntityId(10)));
+    resolver.Resolve(state, new BeginActivationCommand(new EntityId(10)));
+    Assert(state.Entities[new EntityId(10)].ActionPoints == 2, "Activation did not refresh two AP.");
+}
+
+static void ForecastReportsClosedConditions()
+{
+    var state = SampleState();
+    var forecast = new CombatForecast(Resolver()).Evaluate(
+        state,
+        new MoveCommand(new EntityId(10), new Cell(2, 2), 1));
+
+    Assert(forecast.IsLegal, "Expected joining move to be legal.");
+    Assert(forecast.ConditionsClosed.Contains(new ConditionSignal(new EntityId(10), ConditionKind.Isolated)),
+        "Forecast did not close pilot isolation.");
+    Assert(forecast.ConditionsClosed.Contains(new ConditionSignal(new EntityId(20), ConditionKind.Isolated)),
+        "Forecast did not close mech isolation.");
+}
+
+static void ForecastReportsOpenedElevation()
+{
+    var map = new BattleMap(5, 5, new[] { new TerrainTile(new Cell(1, 0), 1, false) });
+    var entity = new CombatEntity(new EntityId(1), new Cell(0, 0), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    var state = new CombatState(map, CombatRules.SpikeDefault, new[] { entity }, entity.Id);
+    var forecast = new CombatForecast(Resolver()).Evaluate(state, new MoveCommand(entity.Id, new Cell(1, 0), 1));
+
+    Assert(forecast.IsLegal, "Expected elevation move to be legal.");
+    Assert(forecast.ConditionsOpened.Contains(new ConditionSignal(entity.Id, ConditionKind.Elevated)),
+        "Forecast did not open Elevated.");
+}
+
+static void AppliedAndDerivedStaySeparate()
+{
+    var state = SampleState();
+    var resolver = Resolver();
+    resolver.Resolve(state, new ApplyConditionCommand(new EntityId(10), new EntityId(20), ConditionKind.Marked, 2));
+    Assert(state.Entities[new EntityId(20)].Conditions.Items.Any(item => item.Kind == ConditionKind.Marked),
+        "Applied condition was not stored.");
+    Throws<CommandRejectedException>(() =>
+        resolver.Resolve(state, new ApplyConditionCommand(new EntityId(10), new EntityId(20), ConditionKind.Isolated, 2)));
+}
+
+static void SurroundedIsDerived()
+{
+    var player = new CombatEntity(new EntityId(1), new Cell(2, 2), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    var enemyA = new CombatEntity(new EntityId(2), new Cell(1, 2), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5))
+        with { Faction = Faction.Enemy };
+    var enemyB = new CombatEntity(new EntityId(3), new Cell(3, 2), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5))
+        with { Faction = Faction.Enemy };
+    var state = new CombatState(OpenMap(), CombatRules.SpikeDefault, new[] { player, enemyA, enemyB });
+
+    Assert(new ConditionEvaluator().Evaluate(state)
+        .Contains(new ConditionSignal(player.Id, ConditionKind.Surrounded)),
+        "Two adjacent hostiles did not derive Surrounded.");
+}
+
+static void ActivationOrderIsEnforced()
+{
+    var state = new CombatState(OpenMap(), CombatRules.SpikeDefault, SampleEntities());
+    Throws<CommandRejectedException>(() =>
+        Resolver().Resolve(state, new BeginActivationCommand(new EntityId(20))));
+    Resolver().Resolve(state, new BeginActivationCommand(new EntityId(10)));
+    Assert(new InitiativeTimeline().Query(state, 1)[0].EntityId == new EntityId(20),
+        "Scheduler did not advance to the next entity.");
+}
+
+static void ConditionDurationAdvances()
+{
+    var state = SampleState();
+    var resolver = Resolver();
+    resolver.Resolve(state, new ApplyConditionCommand(new EntityId(10), new EntityId(20), ConditionKind.Marked, 2));
+    resolver.Resolve(state, new EndActivationCommand(new EntityId(10)));
+    resolver.Resolve(state, new BeginActivationCommand(new EntityId(10)));
+    resolver.Resolve(state, new EndActivationCommand(new EntityId(10)));
+    resolver.Resolve(state, new BeginActivationCommand(new EntityId(20)));
+    Assert(state.Entities[new EntityId(20)].Conditions.Items.Single().RemainingActivations == 1,
+        "Condition did not advance to one remaining activation.");
+    resolver.Resolve(state, new EndActivationCommand(new EntityId(20)));
+    resolver.Resolve(state, new BeginActivationCommand(new EntityId(10)));
+    resolver.Resolve(state, new EndActivationCommand(new EntityId(10)));
+    var expiration = new CombatForecast(resolver).Evaluate(state, new BeginActivationCommand(new EntityId(20)));
+    Assert(expiration.ConditionsClosed.Contains(new ConditionSignal(new EntityId(20), ConditionKind.Marked)),
+        "Forecast did not report condition expiration.");
+    resolver.Resolve(state, new BeginActivationCommand(new EntityId(20)));
+    Assert(state.Entities[new EntityId(20)].Conditions.Items.Count == 0, "Expired condition remained stored.");
+}
+
+static void RelayYardForecastParity()
+{
+    var state = RelayYardScenario.Create();
+    var resolver = Resolver();
+    var forecast = new CombatForecast(resolver);
+    foreach (var command in RelayYardScenario.ScriptedCommands())
+    {
+        var predicted = forecast.Evaluate(state, command);
+        Assert(predicted.IsLegal, $"Relay Yard command rejected: {predicted.RejectionReason}");
+        var actual = resolver.Resolve(state, command);
+        Equal(predicted.Events, actual.Events);
+        Assert(predicted.ResultingStateHash == actual.ResultingStateHash,
+            "Relay Yard forecast hash differs from execution.");
+    }
+}
+
+static void RelayYardReplayIsDeterministic()
+{
+    var replay = new CombatReplay(Resolver());
+    var first = replay.Run(RelayYardScenario.Create(), RelayYardScenario.ScriptedCommands());
+    var second = replay.Run(RelayYardScenario.Create(), RelayYardScenario.ScriptedCommands());
+    Equal(first.Events, second.Events);
+    Assert(first.FinalStateHash == second.FinalStateHash, "Relay Yard final hash changed between replays.");
+}
+
+static void TextRendererShowsWindows()
+{
+    var state = RelayYardScenario.Create();
+    var resolver = Resolver();
+    resolver.Resolve(state, RelayYardScenario.ScriptedCommands()[0]);
+    var forecast = new CombatForecast(resolver).Evaluate(state, RelayYardScenario.ScriptedCommands()[1]);
+    var text = new TextForecastRenderer().RenderForecast(forecast);
+    Assert(text.Contains("OPENS Human:Isolated", StringComparison.Ordinal),
+        "Text forecast omitted opened tactical window.");
+    Assert(text.Contains("AP Human: 2 -> 1", StringComparison.Ordinal),
+        "Text forecast omitted action-point cost.");
+}
+
+static void ResolverEnforcesLineOfSight()
+{
+    var map = new BattleMap(5, 3, new[] { new TerrainTile(new Cell(2, 1), 0, true) });
+    var source = new CombatEntity(new EntityId(1), new Cell(1, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    var target = new CombatEntity(new EntityId(2), new Cell(3, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5))
+        with { Faction = Faction.Enemy };
+    var state = new CombatState(map, CombatRules.SpikeDefault, new[] { source, target }, source.Id);
+
+    Throws<CommandRejectedException>(() =>
+        Resolver().Resolve(state, new DamageCommand(source.Id, target.Id, 1)));
+}
+
 static CombatResolver Resolver() => new();
 
-static CombatState SampleState() => new(OpenMap(), CombatRules.SpikeDefault, SampleEntities());
+static CombatState SampleState() => new(
+    OpenMap(),
+    CombatRules.SpikeDefault,
+    SampleEntities(),
+    new EntityId(10));
 
 static BattleMap OpenMap() => new(32, 32);
 
