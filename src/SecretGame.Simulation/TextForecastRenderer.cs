@@ -108,6 +108,8 @@ public sealed class TextForecastRenderer
                 : $"MODE {RelayYardScenario.NameOf(deployment.PilotId)} + {RelayYardScenario.NameOf(deployment.MechId)}: {deployment.Mode}; pilot -> ({deployment.PilotDestination.Value.X},{deployment.PilotDestination.Value.Y})",
         ResourceChangedEvent resource =>
             $"RESOURCE {resource.ResourceName} ({resource.Reason}): {resource.Before} -> {resource.After} ({resource.Amount:+#;-#;0})",
+        RemoteDirectiveIssuedEvent directive =>
+            $"DIRECTIVE {RelayYardScenario.NameOf(directive.PilotId)} -> {RelayYardScenario.NameOf(directive.MechId)}: {directive.Kind}",
         _ => payload.GetType().Name
     };
 

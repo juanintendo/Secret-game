@@ -1,10 +1,14 @@
 # Milestone 020 — cyborg/mech shared-resource experiment
 
-**Status:** implemented in source; awaiting Windows .NET and Unity verification.
+**Status:** accepted on Windows.
 
 **Design authority:** `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` remains `RECOMMENDATION — NOT CANON`.
 
 **Parent baseline:** `465eaa79ddd1a68224cce2d2d5d609733fa48084`.
+
+**Accepted commit:** `787870695b889d2288677d93c668fd78cd254062`.
+
+Windows evidence: Simulation **40/40**, resource experiment `PASS`, Unity Edit Mode **4/4**, 33 synchronized kernel sources, clean branch synchronized with origin. Both Gate A hashes remained unchanged.
 
 ## Outcome under test
 

@@ -172,6 +172,7 @@ public sealed class CombatState
                 break;
             case ReactionTriggeredEvent:
             case DamageRedirectedEvent:
+            case RemoteDirectiveIssuedEvent:
                 break;
             default:
                 throw new InvalidOperationException($"Unsupported event type {payload.GetType().Name}.");

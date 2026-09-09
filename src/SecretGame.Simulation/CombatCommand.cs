@@ -31,6 +31,24 @@ public sealed record DeployMechRemotelyCommand(
     int ResourceCost,
     int CostAp = 1) : CombatCommand;
 
+public sealed record RemoteMoveDirectiveCommand(
+    EntityId PilotId,
+    EntityId MechId,
+    ResourceId ResourceId,
+    Cell Destination,
+    int MaximumSteps,
+    int ResourceCost,
+    int CostAp = 1) : CombatCommand;
+
+public sealed record RemoteAttackDirectiveCommand(
+    EntityId PilotId,
+    EntityId MechId,
+    ResourceId ResourceId,
+    EntityId TargetId,
+    int Damage,
+    int ResourceCost,
+    int CostAp = 1) : CombatCommand;
+
 public sealed record BeginActivationCommand(EntityId EntityId) : CombatCommand;
 
 public sealed record EndActivationCommand(EntityId EntityId) : CombatCommand;

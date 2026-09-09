@@ -47,4 +47,25 @@ public sealed class KernelReplayTests
         Assert.That(state.Entities[CyborgMechExperimentScenario.Pilot].Flags, Is.EqualTo(EntityFlags.Active));
         Assert.That(state.Entities[CyborgMechExperimentScenario.Mech].Flags, Is.EqualTo(EntityFlags.RemoteControlled));
     }
+
+    [Test]
+    public void RemoteDirectiveForecastMatchesExecutionWithoutMechActivation()
+    {
+        var state = RemoteDirectiveExperimentScenario.Create();
+        var resolver = new CombatResolver();
+        var forecast = new CombatForecast(resolver);
+        foreach (var command in RemoteDirectiveExperimentScenario.ScriptedCommands())
+        {
+            var predicted = forecast.Evaluate(state, command);
+            Assert.That(predicted.IsLegal, Is.True, predicted.RejectionReason);
+            var actual = resolver.Resolve(state, command);
+            Assert.That(actual.Events, Is.EqualTo(predicted.Events));
+            Assert.That(actual.ResultingStateHash, Is.EqualTo(predicted.ResultingStateHash));
+        }
+
+        Assert.That(state.Resources[RemoteDirectiveExperimentScenario.Charge].Current, Is.EqualTo(2));
+        Assert.That(state.Entities[RemoteDirectiveExperimentScenario.Pilot].ActionPoints, Is.EqualTo(0));
+        Assert.That(state.Entities[RemoteDirectiveExperimentScenario.Mech].ActionPoints, Is.EqualTo(2));
+        Assert.That(state.Entities[RemoteDirectiveExperimentScenario.Target].Integrity.Current, Is.EqualTo(12));
+    }
 }

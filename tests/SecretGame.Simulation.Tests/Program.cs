@@ -41,7 +41,13 @@ var tests = new (string Name, Action Run)[]
     ("docked recharge is bounded and forecastable", DockedRechargeIsBounded),
     ("Deploy Remotely spends Charge and removes mech initiative", RemoteDeploymentUsesSharedBudget),
     ("insufficient Charge rejects remote deployment atomically", InsufficientChargeIsAtomic),
-    ("legacy Gate A replay hashes remain unchanged", GateAHashesRemainStable)
+    ("legacy Gate A replay hashes remain unchanged", GateAHashesRemainStable),
+    ("remote directive script preserves forecast parity", RemoteDirectiveForecastParity),
+    ("remote movement spends pilot AP and shared Charge", RemoteMoveUsesPilotBudget),
+    ("remote attack originates from mech without mech AP", RemoteAttackUsesMechPosition),
+    ("remote mech cannot begin an independent activation", RemoteMechHasNoActivation),
+    ("insufficient Charge rejects remote directive atomically", RemoteDirectiveChargeFailureIsAtomic),
+    ("remote directive rejects non-remote mech", RemoteDirectiveRequiresRemoteMode)
 };
 
 var failures = 0;
@@ -620,6 +626,109 @@ static CombatState DockedExperimentState(int charge)
     return new CombatState(baseState.Map, baseState.Rules, new[] { pilot, mech }, mech.Id,
         new[] { new SharedResourcePool(CyborgMechExperimentScenario.Charge,
             CyborgMechExperimentScenario.Pilot, CyborgMechExperimentScenario.Mech, "Charge", charge, 8) });
+}
+
+static void RemoteDirectiveForecastParity()
+{
+    var state = RemoteDirectiveExperimentScenario.Create();
+    var resolver = Resolver();
+    var forecast = new CombatForecast(resolver);
+    foreach (var command in RemoteDirectiveExperimentScenario.ScriptedCommands())
+    {
+        var predicted = forecast.Evaluate(state, command);
+        Assert(predicted.IsLegal, predicted.RejectionReason ?? "Remote directive was rejected.");
+        var actual = resolver.Resolve(state, command);
+        Equal(predicted.Events, actual.Events);
+        Assert(predicted.ResultingStateHash == actual.ResultingStateHash,
+            "Remote directive forecast hash diverged.");
+    }
+}
+
+static void RemoteMoveUsesPilotBudget()
+{
+    var state = RemoteDirectiveExperimentScenario.Create();
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(RemoteDirectiveExperimentScenario.Pilot));
+    var command = new RemoteMoveDirectiveCommand(RemoteDirectiveExperimentScenario.Pilot,
+        RemoteDirectiveExperimentScenario.Mech, RemoteDirectiveExperimentScenario.Charge,
+        new Cell(5, 3), 2, 1);
+    var forecast = new CombatForecast(resolver).Evaluate(state, command);
+    var actual = resolver.Resolve(state, command);
+
+    Equal(forecast.Events, actual.Events);
+    Assert(state.Entities[RemoteDirectiveExperimentScenario.Pilot].ActionPoints == 1,
+        "Remote move did not spend pilot AP.");
+    Assert(state.Entities[RemoteDirectiveExperimentScenario.Mech].ActionPoints == 2,
+        "Remote move incorrectly spent or refreshed mech AP.");
+    Assert(state.Resources[RemoteDirectiveExperimentScenario.Charge].Current == 3,
+        "Remote move did not spend shared Charge.");
+    Assert(state.Entities[RemoteDirectiveExperimentScenario.Mech].Anchor == new Cell(5, 3),
+        "Remote move did not move the mech.");
+}
+
+static void RemoteAttackUsesMechPosition()
+{
+    var state = RemoteDirectiveExperimentScenario.Create();
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(RemoteDirectiveExperimentScenario.Pilot));
+    var command = new RemoteAttackDirectiveCommand(RemoteDirectiveExperimentScenario.Pilot,
+        RemoteDirectiveExperimentScenario.Mech, RemoteDirectiveExperimentScenario.Charge,
+        RemoteDirectiveExperimentScenario.Target, 6, 1);
+    var forecast = new CombatForecast(resolver).Evaluate(state, command);
+    var actual = resolver.Resolve(state, command);
+
+    Equal(forecast.Events, actual.Events);
+    Assert(state.Entities[RemoteDirectiveExperimentScenario.Target].Integrity.Current == 12,
+        "Remote attack did not apply mech-authored damage.");
+    Assert(state.Entities[RemoteDirectiveExperimentScenario.Mech].ActionPoints == 2,
+        "Remote attack consumed mech AP instead of the shared pilot budget.");
+    var text = new TextForecastRenderer().RenderForecast(forecast);
+    Assert(text.Contains("DIRECTIVE Cyborg -> Mech: Attack", StringComparison.Ordinal),
+        "Forecast omitted remote directive authority.");
+    Assert(text.Contains("RESOURCE Charge (RemoteDirective): 4 -> 3 (-1)", StringComparison.Ordinal),
+        "Forecast omitted exact remote Charge cost.");
+}
+
+static void RemoteMechHasNoActivation()
+{
+    var state = RemoteDirectiveExperimentScenario.Create();
+    var before = state.DeterministicHash();
+    Throws<CommandRejectedException>(() =>
+        Resolver().Resolve(state, new BeginActivationCommand(RemoteDirectiveExperimentScenario.Mech)));
+    Assert(state.DeterministicHash() == before && state.Events.Count == 0,
+        "Rejected remote mech activation mutated state.");
+}
+
+static void RemoteDirectiveChargeFailureIsAtomic()
+{
+    var state = RemoteDirectiveExperimentScenario.Create(0);
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(RemoteDirectiveExperimentScenario.Pilot));
+    var before = state.DeterministicHash();
+    var eventCount = state.Events.Count;
+    var forecast = new CombatForecast(resolver).Evaluate(state,
+        new RemoteMoveDirectiveCommand(RemoteDirectiveExperimentScenario.Pilot,
+            RemoteDirectiveExperimentScenario.Mech, RemoteDirectiveExperimentScenario.Charge,
+            new Cell(5, 3), 2, 1));
+    Assert(!forecast.IsLegal, "Zero-Charge remote directive was forecast as legal.");
+    Assert(state.DeterministicHash() == before && state.Events.Count == eventCount,
+        "Rejected remote directive partially mutated state.");
+}
+
+static void RemoteDirectiveRequiresRemoteMode()
+{
+    var source = RemoteDirectiveExperimentScenario.Create();
+    var pilot = source.Entities[RemoteDirectiveExperimentScenario.Pilot];
+    var mech = source.Entities[RemoteDirectiveExperimentScenario.Mech] with { Flags = EntityFlags.Active };
+    var target = source.Entities[RemoteDirectiveExperimentScenario.Target];
+    var state = new CombatState(source.Map, source.Rules, new[] { pilot, mech, target },
+        resources: source.Resources.Values);
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(pilot.Id));
+    var forecast = new CombatForecast(resolver).Evaluate(state,
+        new RemoteAttackDirectiveCommand(pilot.Id, mech.Id, RemoteDirectiveExperimentScenario.Charge,
+            target.Id, 6, 1));
+    Assert(!forecast.IsLegal, "Piloted mech accepted a remote directive.");
 }
 
 static CombatResolver Resolver() => new();

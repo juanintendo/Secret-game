@@ -41,5 +41,6 @@ public enum ResourceChangeReason
 {
     Recharge,
     Deployment,
-    Ability
+    Ability,
+    RemoteDirective
 }

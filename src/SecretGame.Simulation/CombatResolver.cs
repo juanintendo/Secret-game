@@ -20,6 +20,8 @@ public sealed class CombatResolver
             BoardMechCommand board => ResolveBoardMech(state, board),
             RechargeMechCommand recharge => ResolveRechargeMech(state, recharge),
             DeployMechRemotelyCommand deploy => ResolveDeployMechRemotely(state, deploy),
+            RemoteMoveDirectiveCommand remoteMove => ResolveRemoteMove(state, remoteMove),
+            RemoteAttackDirectiveCommand remoteAttack => ResolveRemoteAttack(state, remoteAttack),
             BeginActivationCommand begin => ResolveBeginActivation(state, begin),
             EndActivationCommand end => ResolveEndActivation(state, end),
             ApplyConditionCommand condition => ResolveCondition(state, condition),
@@ -418,6 +420,78 @@ public sealed class CombatResolver
         state.Require(mechId);
         return pilot;
     }
+
+    private IReadOnlyList<CombatEvent> ResolveRemoteMove(
+        CombatState state,
+        RemoteMoveDirectiveCommand command)
+    {
+        var pilot = RequirePilotMechPair(state, command.PilotId, command.MechId);
+        var mech = state.Require(command.MechId);
+        var resource = state.RequireResource(command.ResourceId);
+        RequireRemoteDirective(state, pilot, mech, resource, command.CostAp, command.ResourceCost);
+        if (command.MaximumSteps < 1)
+            throw new CommandRejectedException("Remote movement allowance must be positive.");
+        var path = _pathfinder.FindPath(state, mech, command.Destination)
+            ?? throw new CommandRejectedException("Remote mech destination is not reachable.");
+        if (path.StepCount > command.MaximumSteps)
+            throw new CommandRejectedException($"Remote mech destination requires {path.StepCount} steps.");
+
+        return new CombatEvent[]
+        {
+            Spend(pilot, command.CostAp),
+            SpendResource(pilot.Id, resource, command.ResourceCost, ResourceChangeReason.RemoteDirective),
+            new RemoteDirectiveIssuedEvent(pilot.Id, mech.Id, RemoteDirectiveKind.Move),
+            new EntityMovedEvent(mech.Id, mech.Anchor, command.Destination, path)
+        };
+    }
+
+    private static IReadOnlyList<CombatEvent> ResolveRemoteAttack(
+        CombatState state,
+        RemoteAttackDirectiveCommand command)
+    {
+        var pilot = RequirePilotMechPair(state, command.PilotId, command.MechId);
+        var mech = state.Require(command.MechId);
+        var resource = state.RequireResource(command.ResourceId);
+        RequireRemoteDirective(state, pilot, mech, resource, command.CostAp, command.ResourceCost);
+        var target = state.Require(command.TargetId);
+        RequireVisibleTarget(state, mech, target);
+        if (command.Damage < 1)
+            throw new CommandRejectedException("Remote attack damage must be positive.");
+
+        return new CombatEvent[]
+        {
+            Spend(pilot, command.CostAp),
+            SpendResource(pilot.Id, resource, command.ResourceCost, ResourceChangeReason.RemoteDirective),
+            new RemoteDirectiveIssuedEvent(pilot.Id, mech.Id, RemoteDirectiveKind.Attack)
+        }.Concat(BuildDamageEvents(mech.Id, target, command.Damage, false)).ToArray();
+    }
+
+    private static void RequireRemoteDirective(
+        CombatState state,
+        CombatEntity pilot,
+        CombatEntity mech,
+        SharedResourcePool resource,
+        int costAp,
+        int resourceCost)
+    {
+        RequireResourcePair(resource, pilot.Id, mech.Id);
+        RequireActive(state, pilot.Id);
+        RequireActionCost(costAp, "Remote directive");
+        RequireActionPoints(pilot, costAp);
+        if (pilot.Flags != EntityFlags.Active || mech.Flags != EntityFlags.RemoteControlled)
+            throw new CommandRejectedException("Remote directives require a deployed pilot and remote-controlled mech.");
+        if (resourceCost < 1)
+            throw new CommandRejectedException("Remote directive resource cost must be positive.");
+        if (resource.Current < resourceCost)
+            throw new CommandRejectedException($"Remote directive needs {resourceCost} {resource.Name}.");
+    }
+
+    private static ResourceChangedEvent SpendResource(
+        EntityId sourceId,
+        SharedResourcePool resource,
+        int amount,
+        ResourceChangeReason reason) =>
+        new(sourceId, resource.Id, resource.Name, reason, -amount, resource.Current, resource.Current - amount);
 
     private static void RequireActionCost(int costAp, string actionName)
     {

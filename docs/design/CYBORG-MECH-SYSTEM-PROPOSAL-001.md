@@ -156,3 +156,9 @@ None of these questions blocks the current Unity bootstrap. They block implement
 The reusable state and resolver primitives are now implemented as a falsifying experiment without answering the open balance questions above. The values `3/8`, `+3`, `-2` and `1 AP` are scenario inputs only. They must not be copied into canon or authored content until play evidence supports them.
 
 The experiment also makes one provisional command-budget choice concrete: in Remote mode the mech remains spatial, selectable and targetable but has no independent initiative slot. This prevents a free fourth protagonist while leaving queued directives for the next experiment. It is evidence-producing scaffolding, not approval of the final Remote command model.
+
+## 11. Milestone 021 implementation note
+
+The first Remote command model is implemented as **Option A: immediate directives**. A directive spends Cyborg AP and shared Charge during her activation, then emits movement or damage from the mech. The mech keeps no initiative slot and its AP is neither refreshed nor consumed.
+
+This is a deliberate test of the smallest inspectable model, not a final selection. A queued model will only be implemented if player evidence identifies a specific benefit—anticipated planning or stronger machine-command fantasy—that justifies its extra temporal state and forecast burden.

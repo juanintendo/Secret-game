@@ -44,6 +44,17 @@ public sealed record ResourceChangedEvent(
     int Before,
     int After) : CombatEvent;
 
+public enum RemoteDirectiveKind
+{
+    Move,
+    Attack
+}
+
+public sealed record RemoteDirectiveIssuedEvent(
+    EntityId PilotId,
+    EntityId MechId,
+    RemoteDirectiveKind Kind) : CombatEvent;
+
 public sealed record ActionPointsSpentEvent(
     EntityId EntityId,
     int Amount,
