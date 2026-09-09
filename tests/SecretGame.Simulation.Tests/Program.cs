@@ -75,7 +75,7 @@ static void RemotePilot()
 static void StableHash()
 {
     var first = SampleEntities().ToArray();
-    var second = first.Reverse();
+    var second = first.AsEnumerable().Reverse();
     Assert(
         new CombatState(OpenMap(), CombatRules.SpikeDefault, first).DeterministicHash()
         == new CombatState(OpenMap(), CombatRules.SpikeDefault, second).DeterministicHash(),

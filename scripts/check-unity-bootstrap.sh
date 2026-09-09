@@ -3,6 +3,10 @@ set -euo pipefail
 
 project="unity/SecretGame"
 
+jq -e '.sdk.version == "8.0.100" and .sdk.rollForward == "latestPatch" and .sdk.allowPrerelease == false' \
+  global.json >/dev/null
+rg -q '<LangVersion>10\.0</LangVersion>' Directory.Build.props
+
 jq -e '.dependencies["com.unity.render-pipelines.universal"] == "17.3.0"' \
   "$project/Packages/manifest.json" >/dev/null
 jq -e '.dependencies["com.unity.test-framework"] == "1.5.1"' \

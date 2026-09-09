@@ -18,6 +18,7 @@
 - The next waited run reached compilation and exposed one compatibility mismatch: Unity selected C# 9 while the kernel uses C# 10 syntax. Milestone 012 adds a pinned `-langversion:10.0` compiler-response probe; Unity tests remain pending until that probe runs on Windows.
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
 - The following Windows run resolved records and reduced compilation to four unavailable modern .NET APIs. Milestone 014 replaces them in the authoritative source with behavior-equivalent portable null checking, SHA-256 and uppercase hexadecimal encoding. Expected replay hashes are unchanged; Unity execution remains pending.
+- The next .NET verification selected SDK 10 because the repo used `latest`, changing `array.Reverse()` overload binding in one test. Milestone 015 pins the .NET 8 patch band and C# 10, and makes the intended LINQ call explicit. No test executed in the failed run; both .NET harnesses and Unity remain to be rerun.
 
 ## Accepted architecture
 
