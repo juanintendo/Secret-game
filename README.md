@@ -15,12 +15,15 @@ docs/canon/      Source-of-truth documents (authority order below) + approved ar
 docs/consult/    External consultant analysis — recommendations, not canon
 docs/consultation/ Final preproduction consultation and implementation handoff
 docs/implementation/ Implementation milestones and accepted technical rulings
+docs/design/     Bounded design proposals — not canon until explicitly accepted
+docs/continuity/ Dated operational checkpoints for clean conversation handoffs
 src/             Engine-free simulation source
 tests/           Executable simulation verification harnesses
 unity/SecretGame/ Provisional Unity 6.3 LTS + URP technical-art host
 docs/pipeline/   Production pipeline artifacts (perf budgets, swatches, shot registry)
 .claude/skills/  Project skills that load the canon and the working rules into any agent session
 CLAUDE.md        Agent entry point and skill routing
+CONTINUITY.md    Router to the latest verified project checkpoint
 ```
 
 ## Authority order
