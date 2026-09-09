@@ -21,6 +21,7 @@
 - The next .NET verification selected SDK 10 because the repo used `latest`, changing `array.Reverse()` overload binding in one test. Milestone 015 pins the .NET 8 patch band and C# 10, and makes the intended LINQ call explicit. No test executed in the failed run; both .NET harnesses and Unity remain to be rerun.
 - Windows Code Integrity then proved Smart App Control was blocking unsigned DLLs created by Unity Burst JIT under `Library/BurstCache/JIT`. Milestone 016 disables Burst only for the managed bootstrap test process; global Windows security remains enabled. Burst production use remains a later explicit decision.
 - The first SDK pin used `8.0.100 + latestPatch`, which cannot roll across feature bands to the installed `8.0.425`. Milestone 017 corrects the request to `8.0.400 + latestPatch`. The failed commands never compiled or ran tests.
+- With SDK 8.0.425 selected, Simulation passed 33/33. Tactics then revealed that the repository-wide C# 10 pin rejected Content's established C# 11 `required` members. Milestone 018 pins the .NET solution to C# 11 while keeping only the Unity Simulation boundary on C# 10. Unity Edit Mode already passed 3/3 independently.
 
 ## Accepted architecture
 
