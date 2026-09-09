@@ -22,7 +22,8 @@ var tests = new (string Name, Action Run)[]
     ("Piercing bypasses Guard", PiercingBypassesGuard),
     ("mass tiers reduce displacement without changing footprint", MassReducesDisplacement),
     ("Anchored degrades displacement to Staggered", AnchoredDegradesControl),
-    ("2x2 pathing reaches objective on four narrow map variants", FourNarrowMapVariants)
+    ("2x2 pathing reaches objective on four narrow map variants", FourNarrowMapVariants),
+    ("compiler emits typed resource spend effect", CompilerCreatesResourceSpend)
 };
 var failures = 0;
 foreach (var test in tests)
@@ -256,6 +257,29 @@ static void FourNarrowMapVariants()
         Assert(path is not null && path.StepCount > 0 && path.StepCount < 100,
             $"2x2 mech failed narrow map variant {index + 1}.");
     }
+}
+
+static void CompilerCreatesResourceSpend()
+{
+    var ability = new AbilityDefinition
+    {
+        Id = "cyborg.bulwark.prototype-brace",
+        Version = 1,
+        Owner = "cyborg",
+        Specialty = "bulwark",
+        CostAp = 1,
+        MotionArchetype = "mech-stance",
+        Effects = new[]
+        {
+            new EffectDefinition { Type = EffectType.SpendResource, ResourceId = 1, Amount = 2 },
+            new EffectDefinition { Type = EffectType.GrantGuard, Amount = 6 }
+        }
+    };
+    var stack = new AbilityCompiler().Compile(ability, new EntityId(210), new EntityId(210));
+    Assert(stack.Effects[0] == new SpendResourceEffect(new ResourceId(1), 2),
+        "Compiler did not preserve resource ID and amount.");
+    Assert(stack.Effects[1] == new GrantGuardEffect(new EntityId(210), 6),
+        "Compiler changed the following Guard effect.");
 }
 
 static ReactionQualifier Qualifier() => new(new ContentLoader().Load("content"));

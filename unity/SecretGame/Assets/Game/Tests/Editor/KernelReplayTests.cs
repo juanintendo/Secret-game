@@ -68,4 +68,23 @@ public sealed class KernelReplayTests
         Assert.That(state.Entities[RemoteDirectiveExperimentScenario.Mech].ActionPoints, Is.EqualTo(2));
         Assert.That(state.Entities[RemoteDirectiveExperimentScenario.Target].Integrity.Current, Is.EqualTo(12));
     }
+
+    [Test]
+    public void BoardedSpecialtyPoliciesPreserveForecastParity()
+    {
+        foreach (var policy in new[] { CyborgSpecialtyPolicy.Bulwark, CyborgSpecialtyPolicy.Redline })
+        {
+            var state = SpecialtyPolicyExperimentScenario.CreateBoarded();
+            var resolver = new CombatResolver();
+            var forecast = new CombatForecast(resolver);
+            foreach (var command in SpecialtyPolicyExperimentScenario.BoardedScript(policy))
+            {
+                var predicted = forecast.Evaluate(state, command);
+                Assert.That(predicted.IsLegal, Is.True, predicted.RejectionReason);
+                var actual = resolver.Resolve(state, command);
+                Assert.That(actual.Events, Is.EqualTo(predicted.Events));
+                Assert.That(actual.ResultingStateHash, Is.EqualTo(predicted.ResultingStateHash));
+            }
+        }
+    }
 }

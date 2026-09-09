@@ -162,3 +162,13 @@ The experiment also makes one provisional command-budget choice concrete: in Rem
 The first Remote command model is implemented as **Option A: immediate directives**. A directive spends Cyborg AP and shared Charge during her activation, then emits movement or damage from the mech. The mech keeps no initiative slot and its AP is neither refreshed nor consumed.
 
 This is a deliberate test of the smallest inspectable model, not a final selection. A queued model will only be implemented if player evidence identifies a specific benefit—anticipated planning or stronger machine-command fantasy—that justifies its extra temporal state and forecast burden.
+
+## 12. Milestone 022 implementation note
+
+The first three-policy comparison reuses one effect grammar instead of creating bespoke Specialty resolvers:
+
+- Bulwark: boarded `SpendResource + GrantGuard`;
+- Remote Arsenal: the accepted immediate move/attack directives;
+- Redline: boarded zero-Charge `Damage` baseline.
+
+The output signatures are intentionally different, but this does not yet validate meaningful deployment choices. Redline alternator recovery remains deferred until an encounter demonstrates a real recovery problem. The next experiment must compare stay-versus-transition decisions under enemy pressure.

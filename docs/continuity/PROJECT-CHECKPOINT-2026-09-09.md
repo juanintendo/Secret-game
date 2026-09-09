@@ -16,6 +16,7 @@
 - Windows Unity batch bootstrap passed 3/3 Edit Mode tests with exit code 0, Smart App Control enabled and Burst disabled only for the managed test process. Milestone 019 records the accepted generated baseline.
 - Windows subsequently confirmed Tactics **17/17** and a clean synchronized branch at `465eaa79ddd1a68224cce2d2d5d609733fa48084`. All baseline harnesses are closed.
 - Milestone 020 then passed on Windows at `787870695b889d2288677d93c668fd78cd254062`: Simulation **40/40**, the shared Charge/Board/Recharge/Deploy harness `PASS`, Unity **4/4**, clean synchronized branch. The data-only resource loop is accepted; its numeric inputs remain provisional.
+- Milestone 021 passed on Windows at `a82a7a45971d1ffe5621ed36652599635860ce07`: Simulation **46/46**, immediate remote-directive harness `PASS`, Unity **5/5**, clean synchronized branch. Option A is the retained prototype because no evidence yet justifies a temporal queue.
 - The first Windows attempt synchronized 31/31 kernel files, then exposed a PowerShell runner defect: direct invocation of the GUI editor left `$LASTEXITCODE` unset. Milestone 011 replaces that mechanism with an explicit waited process handle. This is not yet Unity test evidence.
 - The next waited run reached compilation and exposed one compatibility mismatch: Unity selected C# 9 while the kernel uses C# 10 syntax. Milestone 012 adds a pinned `-langversion:10.0` compiler-response probe; Unity tests remain pending until that probe runs on Windows.
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
@@ -65,12 +66,12 @@ Do not:
 
 ## Immediate next objective
 
-1. Import and verify Milestone 021 on Juan's Windows checkout.
-2. Read the immediate-directive text harness as a player, not only as a test operator.
-3. Decide whether it feels like one linked character or a fourth unit hidden in the Cyborg menu.
-4. Build a one-slot queued comparison only if that evidence identifies a real advantage.
-5. Otherwise proceed to bounded Specialty policy tests without adding temporal machinery.
+1. Import and verify Milestone 022 on Juan's Windows checkout.
+2. Confirm the three policy signatures remain distinct across .NET and Unity.
+3. Build one enemy-pressure encounter with a stay-versus-transition choice for every policy.
+4. Measure damage, prevention, threatened cells, Charge, AP and stalled turns.
+5. Approve, revise or reject each policy from encounter evidence before art production.
 
 ## Resume prompt
 
-> Continue Secret-game from `docs/continuity/PROJECT-CHECKPOINT-2026-09-09.md`. Load canon-guard, combat-kernel, content-schema and adversarial-review. Verify branch and HEAD first. Do not treat `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` as canon. Milestone 020 passed. Milestone 021 implements immediate remote directives paid from Cyborg AP and shared Charge; verify it on Windows, then build a queue only if player evidence justifies the additional temporal state.
+> Continue Secret-game from `docs/continuity/PROJECT-CHECKPOINT-2026-09-09.md`. Load canon-guard, combat-kernel, content-schema and adversarial-review. Verify branch and HEAD first. Do not treat `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` as canon. Milestones 020 and 021 passed. Milestone 022 compares provisional Bulwark, Remote Arsenal and Redline action signatures through one typed effect grammar; verify it on Windows, then build the enemy-pressure stay-versus-transition encounter.

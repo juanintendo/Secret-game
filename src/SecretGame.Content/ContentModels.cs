@@ -28,6 +28,7 @@ public sealed record EffectDefinition
 {
     public required EffectType Type { get; init; }
     public int? Amount { get; init; }
+    public ulong? ResourceId { get; init; }
     public string? Status { get; init; }
     public int? Duration { get; init; }
     public int? Distance { get; init; }

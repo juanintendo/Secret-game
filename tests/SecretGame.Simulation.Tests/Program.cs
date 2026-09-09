@@ -47,7 +47,11 @@ var tests = new (string Name, Action Run)[]
     ("remote attack originates from mech without mech AP", RemoteAttackUsesMechPosition),
     ("remote mech cannot begin an independent activation", RemoteMechHasNoActivation),
     ("insufficient Charge rejects remote directive atomically", RemoteDirectiveChargeFailureIsAtomic),
-    ("remote directive rejects non-remote mech", RemoteDirectiveRequiresRemoteMode)
+    ("remote directive rejects non-remote mech", RemoteDirectiveRequiresRemoteMode),
+    ("specialty policy scripts preserve forecast parity", SpecialtyPolicyForecastParity),
+    ("Bulwark converts Charge into Guard while boarded", BulwarkConvertsChargeToGuard),
+    ("Redline strike preserves Charge while dealing damage", RedlinePreservesCharge),
+    ("boarded effects reject wrong mode and insufficient Charge atomically", BoardedEffectsRejectAtomically)
 };
 
 var failures = 0;
@@ -729,6 +733,88 @@ static void RemoteDirectiveRequiresRemoteMode()
         new RemoteAttackDirectiveCommand(pilot.Id, mech.Id, RemoteDirectiveExperimentScenario.Charge,
             target.Id, 6, 1));
     Assert(!forecast.IsLegal, "Piloted mech accepted a remote directive.");
+}
+
+static void SpecialtyPolicyForecastParity()
+{
+    foreach (var policy in new[] { CyborgSpecialtyPolicy.Bulwark, CyborgSpecialtyPolicy.Redline })
+    {
+        var state = SpecialtyPolicyExperimentScenario.CreateBoarded();
+        var resolver = Resolver();
+        var forecast = new CombatForecast(resolver);
+        foreach (var command in SpecialtyPolicyExperimentScenario.BoardedScript(policy))
+        {
+            var predicted = forecast.Evaluate(state, command);
+            Assert(predicted.IsLegal, predicted.RejectionReason ?? $"{policy} command rejected.");
+            var actual = resolver.Resolve(state, command);
+            Equal(predicted.Events, actual.Events);
+            Assert(predicted.ResultingStateHash == actual.ResultingStateHash,
+                $"{policy} forecast hash diverged.");
+        }
+    }
+}
+
+static void BulwarkConvertsChargeToGuard()
+{
+    var state = SpecialtyPolicyExperimentScenario.CreateBoarded();
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(SpecialtyPolicyExperimentScenario.Mech));
+    var predicted = new CombatForecast(resolver).Evaluate(state, SpecialtyPolicyExperimentScenario.BulwarkAction());
+    var actual = resolver.Resolve(state, SpecialtyPolicyExperimentScenario.BulwarkAction());
+
+    Equal(predicted.Events, actual.Events);
+    Assert(state.Resources[SpecialtyPolicyExperimentScenario.Charge].Current == 2,
+        "Bulwark did not spend two Charge.");
+    Assert(state.Entities[SpecialtyPolicyExperimentScenario.Mech].Guard.Current == 6,
+        "Bulwark did not grant six Guard.");
+    Assert(state.Entities[SpecialtyPolicyExperimentScenario.Mech].ActionPoints == 1,
+        "Bulwark did not spend one mech AP.");
+}
+
+static void RedlinePreservesCharge()
+{
+    var state = SpecialtyPolicyExperimentScenario.CreateBoarded();
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(SpecialtyPolicyExperimentScenario.Mech));
+    var predicted = new CombatForecast(resolver).Evaluate(state, SpecialtyPolicyExperimentScenario.RedlineAction());
+    var actual = resolver.Resolve(state, SpecialtyPolicyExperimentScenario.RedlineAction());
+
+    Equal(predicted.Events, actual.Events);
+    Assert(state.Resources[SpecialtyPolicyExperimentScenario.Charge].Current == 4,
+        "Redline unexpectedly spent or generated Charge.");
+    Assert(state.Entities[SpecialtyPolicyExperimentScenario.Target].Integrity.Current == 11,
+        "Redline strike did not deal seven damage.");
+    Assert(state.Entities[SpecialtyPolicyExperimentScenario.Mech].ActionPoints == 1,
+        "Redline did not spend one mech AP.");
+}
+
+static void BoardedEffectsRejectAtomically()
+{
+    var remote = RemoteDirectiveExperimentScenario.Create();
+    var remoteResolver = Resolver();
+    remoteResolver.Resolve(remote, new BeginActivationCommand(SpecialtyPolicyExperimentScenario.Pilot));
+    var remoteBefore = remote.DeterministicHash();
+    var remoteEvents = remote.Events.Count;
+    var wrongMode = new CombatForecast(remoteResolver).Evaluate(remote, SpecialtyPolicyExperimentScenario.BulwarkAction());
+    Assert(!wrongMode.IsLegal, "Remote mech accepted a boarded effect stack.");
+    Assert(remote.DeterministicHash() == remoteBefore && remote.Events.Count == remoteEvents,
+        "Wrong-mode boarded stack mutated state.");
+
+    var source = SpecialtyPolicyExperimentScenario.CreateBoarded();
+    var pilot = source.Entities[SpecialtyPolicyExperimentScenario.Pilot];
+    var mech = source.Entities[SpecialtyPolicyExperimentScenario.Mech];
+    var target = source.Entities[SpecialtyPolicyExperimentScenario.Target];
+    var lowCharge = new CombatState(source.Map, source.Rules, new[] { pilot, mech, target },
+        resources: new[] { new SharedResourcePool(SpecialtyPolicyExperimentScenario.Charge,
+            pilot.Id, mech.Id, "Charge", 1, 8) });
+    var resolver = Resolver();
+    resolver.Resolve(lowCharge, new BeginActivationCommand(mech.Id));
+    var before = lowCharge.DeterministicHash();
+    var eventCount = lowCharge.Events.Count;
+    var insufficient = new CombatForecast(resolver).Evaluate(lowCharge, SpecialtyPolicyExperimentScenario.BulwarkAction());
+    Assert(!insufficient.IsLegal, "Bulwark spent more Charge than available.");
+    Assert(lowCharge.DeterministicHash() == before && lowCharge.Events.Count == eventCount,
+        "Insufficient-Charge effect stack partially mutated state.");
 }
 
 static CombatResolver Resolver() => new();

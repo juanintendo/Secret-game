@@ -6,6 +6,8 @@ public sealed record DamageEffect(EntityId TargetId, int Amount, bool Piercing =
 
 public sealed record GrantGuardEffect(EntityId TargetId, int Amount) : CombatEffect;
 
+public sealed record SpendResourceEffect(ResourceId ResourceId, int Amount) : CombatEffect;
+
 public sealed record ApplyConditionEffect(
     EntityId TargetId,
     ConditionKind Kind,

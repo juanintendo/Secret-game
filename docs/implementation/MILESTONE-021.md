@@ -1,10 +1,14 @@
 # Milestone 021 — immediate remote directives
 
-**Status:** implemented in source; awaiting Windows .NET and Unity verification.
+**Status:** accepted on Windows.
 
 **Design authority:** Option A is an experiment under `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md`; it is not canon or final balance.
 
 **Parent baseline:** `787870695b889d2288677d93c668fd78cd254062`.
+
+**Accepted commit:** `a82a7a45971d1ffe5621ed36652599635860ce07`.
+
+Windows evidence: Simulation **46/46**, immediate remote-directive harness `PASS`, Unity Edit Mode **5/5**, 34 synchronized kernel sources, clean branch synchronized with origin.
 
 ## Question under test
 

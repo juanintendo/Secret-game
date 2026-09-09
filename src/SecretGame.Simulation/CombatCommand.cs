@@ -49,6 +49,13 @@ public sealed record RemoteAttackDirectiveCommand(
     int ResourceCost,
     int CostAp = 1) : CombatCommand;
 
+public sealed record BoardedMechEffectStackCommand(
+    EntityId PilotId,
+    EntityId MechId,
+    int CostAp,
+    IReadOnlyList<CombatEffect> Effects,
+    IReadOnlyList<ReactionInvocation>? Reactions = null) : CombatCommand;
+
 public sealed record BeginActivationCommand(EntityId EntityId) : CombatCommand;
 
 public sealed record EndActivationCommand(EntityId EntityId) : CombatCommand;

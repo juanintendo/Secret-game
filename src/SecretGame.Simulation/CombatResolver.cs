@@ -11,6 +11,8 @@ public sealed class CombatResolver
 
         if (command is EffectStackCommand stack)
             return ResolveEffectStack(state, stack);
+        if (command is BoardedMechEffectStackCommand boardedStack)
+            return ResolveBoardedMechEffectStack(state, boardedStack);
 
         var payloads = command switch
         {
@@ -109,6 +111,7 @@ public sealed class CombatResolver
         {
             DamageEffect damage => ResolveEffectDamage(state, sourceId, damage),
             GrantGuardEffect guard => ResolveGrantGuard(state, sourceId, guard),
+            SpendResourceEffect resource => ResolveSpendResource(state, sourceId, resource),
             ApplyConditionEffect condition => ResolveEffectCondition(state, sourceId, condition),
             DisplaceEffect displace => ResolveDisplace(state, sourceId, displace),
             _ => throw new CommandRejectedException($"Unsupported effect type {effect.GetType().Name}.")
@@ -161,6 +164,24 @@ public sealed class CombatResolver
         return new CombatEvent[]
         {
             new GuardGrantedEvent(sourceId, target.Id, effect.Amount, target.Guard.Current, target.Guard.Current + effect.Amount)
+        };
+    }
+
+    private static IReadOnlyList<CombatEvent> ResolveSpendResource(
+        CombatState state,
+        EntityId sourceId,
+        SpendResourceEffect effect)
+    {
+        var resource = state.RequireResource(effect.ResourceId);
+        if (sourceId != resource.OwnerId && sourceId != resource.PartnerId)
+            throw new CommandRejectedException($"Entity {sourceId} cannot spend {resource.Name}.");
+        if (effect.Amount < 1)
+            throw new CommandRejectedException("Resource spend must be positive.");
+        if (resource.Current < effect.Amount)
+            throw new CommandRejectedException($"Effect needs {effect.Amount} {resource.Name}.");
+        return new CombatEvent[]
+        {
+            SpendResource(sourceId, resource, effect.Amount, ResourceChangeReason.Ability)
         };
     }
 
@@ -419,6 +440,19 @@ public sealed class CombatResolver
         var pilot = state.Require(pilotId);
         state.Require(mechId);
         return pilot;
+    }
+
+    private CommandResult ResolveBoardedMechEffectStack(
+        CombatState state,
+        BoardedMechEffectStackCommand command)
+    {
+        var pilot = RequirePilotMechPair(state, command.PilotId, command.MechId);
+        var mech = state.Require(command.MechId);
+        state.RequireLinkedPair(pilot.Id, mech.Id);
+        if (pilot.Flags != EntityFlags.Docked || mech.Flags != EntityFlags.Active)
+            throw new CommandRejectedException("Boarded mech action requires the pilot aboard an active mech.");
+        return ResolveEffectStack(state,
+            new EffectStackCommand(mech.Id, command.CostAp, command.Effects, command.Reactions));
     }
 
     private IReadOnlyList<CombatEvent> ResolveRemoteMove(

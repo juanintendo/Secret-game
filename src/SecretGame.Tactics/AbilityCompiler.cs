@@ -23,6 +23,9 @@ public sealed class AbilityCompiler
     {
         EffectType.Damage => new DamageEffect(targetId, RequiredPositive(effect.Amount, "damage amount")),
         EffectType.GrantGuard => new GrantGuardEffect(targetId, RequiredPositive(effect.Amount, "Guard amount")),
+        EffectType.SpendResource => new SpendResourceEffect(
+            new ResourceId(RequiredPositive(effect.ResourceId, "resource ID")),
+            RequiredPositive(effect.Amount, "resource amount")),
         EffectType.ApplyStatus => new ApplyConditionEffect(
             targetId,
             ParseCondition(effect.Status),
@@ -36,6 +39,9 @@ public sealed class AbilityCompiler
     };
 
     private static int RequiredPositive(int? value, string field) =>
+        value is > 0 ? value.Value : throw new InvalidOperationException($"Missing or invalid {field}.");
+
+    private static ulong RequiredPositive(ulong? value, string field) =>
         value is > 0 ? value.Value : throw new InvalidOperationException($"Missing or invalid {field}.");
 
     private static ConditionKind ParseCondition(string? value) => value switch
