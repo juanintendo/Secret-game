@@ -2,6 +2,8 @@ namespace SecretGame.Simulation;
 
 public sealed class CombatResolver
 {
+    private readonly GridPathfinder _pathfinder = new();
+
     public CommandResult Resolve(CombatState state, CombatCommand command)
     {
         ArgumentNullException.ThrowIfNull(state);
@@ -22,21 +24,20 @@ public sealed class CombatResolver
         return new CommandResult(events, state.DeterministicHash());
     }
 
-    private static IReadOnlyList<CombatEvent> ResolveMove(CombatState state, MoveCommand command)
+    private IReadOnlyList<CombatEvent> ResolveMove(CombatState state, MoveCommand command)
     {
         var entity = state.Require(command.EntityId);
         if (!entity.Flags.Spatial || !entity.Flags.Selectable)
             throw new CommandRejectedException($"Entity {command.EntityId} cannot move in its current state.");
 
-        var destinationCells = entity.Footprint.OccupiedCells(command.Destination).ToHashSet();
-        foreach (var other in state.Entities.Values)
-        {
-            if (other.Id == entity.Id || !other.Flags.Spatial) continue;
-            if (other.Footprint.OccupiedCells(other.Anchor).Any(destinationCells.Contains))
-                throw new CommandRejectedException($"Destination overlaps entity {other.Id}.");
-        }
+        if (command.MaximumSteps < 1)
+            throw new CommandRejectedException("Movement allowance must be positive.");
+        var path = _pathfinder.FindPath(state, entity, command.Destination)
+            ?? throw new CommandRejectedException("Destination is not reachable.");
+        if (path.StepCount > command.MaximumSteps)
+            throw new CommandRejectedException($"Destination requires {path.StepCount} steps.");
 
-        return new CombatEvent[] { new EntityMovedEvent(entity.Id, entity.Anchor, command.Destination) };
+        return new CombatEvent[] { new EntityMovedEvent(entity.Id, entity.Anchor, command.Destination, path) };
     }
 
     private static IReadOnlyList<CombatEvent> ResolveDamage(CombatState state, DamageCommand command)

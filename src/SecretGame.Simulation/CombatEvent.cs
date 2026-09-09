@@ -5,7 +5,8 @@ public abstract record CombatEvent;
 public sealed record EntityMovedEvent(
     EntityId EntityId,
     Cell From,
-    Cell To) : CombatEvent;
+    Cell To,
+    CellPath Path) : CombatEvent;
 
 public sealed record IntegrityDamagedEvent(
     EntityId SourceId,

@@ -14,7 +14,16 @@ var tests = new (string Name, Action Run)[]
     ("multi-cell movement rejects occupied destinations", OccupancyIsValidated),
     ("forecast parity holds across 500 state-command pairs", ForecastCorpusParity),
     ("replay verifier locates first divergent event", ReplayDivergenceIsLocated),
-    ("forecast corpus stays within provisional time budget", ForecastBudget)
+    ("forecast corpus stays within provisional time budget", ForecastBudget),
+    ("movement topology remains configurable", MovementTopologyIsConfigurable),
+    ("narrow door rejects 2x2 while allowing 1x1", NarrowDoorTestsFootprint),
+    ("terrain blocks line of sight", TerrainBlocksSight),
+    ("cover is read from the attacked tile edge", CoverComesFromEdge),
+    ("initiative rail excludes docked pilot", InitiativeFiltersFlags),
+    ("diagonal movement cannot cut blocked corners", DiagonalCannotCutCorner),
+    ("initial state rejects overlapping entities", InitialOverlapIsRejected),
+    ("movement forecast includes the exact executed path", MovementForecastMatchesExecution),
+    ("map and movement rules participate in state hash", SpatialRulesAffectHash)
 };
 
 var failures = 0;
@@ -56,7 +65,9 @@ static void StableHash()
 {
     var first = SampleEntities().ToArray();
     var second = first.Reverse();
-    Assert(new CombatState(first).DeterministicHash() == new CombatState(second).DeterministicHash(),
+    Assert(
+        new CombatState(OpenMap(), CombatRules.SpikeDefault, first).DeterministicHash()
+        == new CombatState(OpenMap(), CombatRules.SpikeDefault, second).DeterministicHash(),
         "Hash changed with insertion order.");
 }
 
@@ -150,7 +161,7 @@ static void ForecastCorpusParity()
             new Footprint(index % 2 + 1, index % 3 + 1),
             EntityFlags.Active,
             new IntegrityPool(1000, 1000));
-        var state = new CombatState(new[] { source, target });
+        var state = new CombatState(OpenMap(), CombatRules.SpikeDefault, new[] { source, target });
         var command = new DamageCommand(source.Id, target.Id, index);
         var predicted = forecast.Evaluate(state, command);
         var actual = resolver.Resolve(state, command);
@@ -199,9 +210,128 @@ static void ForecastBudget()
         $"500 forecasts exceeded the provisional aggregate budget: {timer.ElapsedMilliseconds} ms.");
 }
 
+static void MovementTopologyIsConfigurable()
+{
+    var entity = new CombatEntity(new EntityId(1), new Cell(0, 0), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    var cardinalState = new CombatState(OpenMap(), new CombatRules(MovementTopology.CardinalFour, 1), new[] { entity });
+    var diagonalState = new CombatState(OpenMap(), new CombatRules(MovementTopology.EightConnected, 1), new[] { entity });
+    var pathfinder = new GridPathfinder();
+
+    Assert(pathfinder.FindPath(cardinalState, entity, new Cell(1, 1))?.StepCount == 2,
+        "Cardinal topology did not require two steps.");
+    Assert(pathfinder.FindPath(diagonalState, entity, new Cell(1, 1))?.StepCount == 1,
+        "Eight-connected topology did not permit one diagonal step.");
+}
+
+static void NarrowDoorTestsFootprint()
+{
+    var wall = Enumerable.Range(0, 5)
+        .Where(y => y != 2)
+        .Select(y => new TerrainTile(new Cell(3, y), 0, true));
+    var map = new BattleMap(7, 5, wall);
+    var human = new CombatEntity(new EntityId(1), new Cell(1, 2), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    var mech = new CombatEntity(new EntityId(2), new Cell(0, 0), new Footprint(2, 2), EntityFlags.Active, new IntegrityPool(20, 20));
+    var pathfinder = new GridPathfinder();
+
+    var humanState = new CombatState(map, CombatRules.SpikeDefault, new[] { human });
+    var mechState = new CombatState(map, CombatRules.SpikeDefault, new[] { mech });
+    Assert(pathfinder.FindPath(humanState, human, new Cell(5, 2)) is not null,
+        "Human could not use one-cell door.");
+    Assert(pathfinder.FindPath(mechState, mech, new Cell(4, 0)) is null,
+        "Mech incorrectly crossed one-cell door.");
+}
+
+static void TerrainBlocksSight()
+{
+    var blockedMap = new BattleMap(8, 8, new[] { new TerrainTile(new Cell(2, 1), 0, true) });
+    var sight = new LineOfSight();
+    Assert(!sight.HasClearLine(blockedMap, new Cell(1, 1), new Cell(3, 1)),
+        "Blocked terrain did not stop sight.");
+    Assert(sight.HasClearLine(blockedMap, new Cell(1, 2), new Cell(3, 2)),
+        "Clear row incorrectly stopped sight.");
+}
+
+static void CoverComesFromEdge()
+{
+    var target = new Cell(4, 4);
+    var map = new BattleMap(8, 8, cover: new[]
+    {
+        new CoverEdge(target, new Cell(3, 4), CoverLevel.Full),
+        new CoverEdge(target, new Cell(4, 3), CoverLevel.Half)
+    });
+    var resolver = new CoverResolver();
+
+    Assert(resolver.AgainstAttack(map, target, new Cell(0, 4)) == CoverLevel.Full,
+        "West attack did not read west edge.");
+    Assert(resolver.AgainstAttack(map, target, new Cell(4, 0)) == CoverLevel.Half,
+        "North attack did not read north edge.");
+}
+
+static void InitiativeFiltersFlags()
+{
+    var state = SampleState();
+    var resolver = Resolver();
+    resolver.Resolve(state, new SetDeploymentModeCommand(new EntityId(10), new EntityId(20), DeploymentMode.Docked));
+    var rail = new InitiativeTimeline().Query(state, 4);
+
+    Assert(rail.All(slot => slot.EntityId == new EntityId(20)), "Docked pilot appeared on initiative rail.");
+    Assert(rail.Select(slot => slot.ActsAt).SequenceEqual(new[] { 0, 10, 20, 30 }),
+        "Initiative rail did not advance by the mech interval.");
+}
+
+static void DiagonalCannotCutCorner()
+{
+    var map = new BattleMap(4, 4, new[]
+    {
+        new TerrainTile(new Cell(1, 0), 0, true),
+        new TerrainTile(new Cell(0, 1), 0, true)
+    });
+    var entity = new CombatEntity(new EntityId(1), new Cell(0, 0), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    var state = new CombatState(map, CombatRules.SpikeDefault, new[] { entity });
+
+    Assert(new GridPathfinder().FindPath(state, entity, new Cell(1, 1)) is null,
+        "Diagonal path cut through two blocked corners.");
+}
+
+static void InitialOverlapIsRejected()
+{
+    var first = new CombatEntity(new EntityId(1), new Cell(1, 1), new Footprint(2, 2), EntityFlags.Active, new IntegrityPool(5, 5));
+    var second = new CombatEntity(new EntityId(2), new Cell(2, 2), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(5, 5));
+    Throws<ArgumentException>(() =>
+        new CombatState(OpenMap(), CombatRules.SpikeDefault, new[] { first, second }));
+}
+
+static void MovementForecastMatchesExecution()
+{
+    var state = SampleState();
+    var command = new MoveCommand(new EntityId(10), new Cell(0, 4), 4);
+    var resolver = Resolver();
+    var forecast = new CombatForecast(resolver).Evaluate(state, command);
+    var actual = resolver.Resolve(state, command);
+
+    Assert(forecast.IsLegal, "Expected movement forecast to be legal.");
+    Equal(forecast.Events, actual.Events);
+    var moved = (EntityMovedEvent)actual.Events[0].Payload;
+    Assert(moved.Path.StepCount == 3, "Unexpected movement path length.");
+}
+
+static void SpatialRulesAffectHash()
+{
+    var entities = SampleEntities().ToArray();
+    var cardinal = new CombatState(OpenMap(), new CombatRules(MovementTopology.CardinalFour, 1), entities);
+    var diagonal = new CombatState(OpenMap(), new CombatRules(MovementTopology.EightConnected, 1), entities);
+    var blockedMap = new BattleMap(32, 32, new[] { new TerrainTile(new Cell(20, 20), 0, true) });
+    var terrainChanged = new CombatState(blockedMap, new CombatRules(MovementTopology.CardinalFour, 1), entities);
+
+    Assert(cardinal.DeterministicHash() != diagonal.DeterministicHash(), "Movement topology was absent from hash.");
+    Assert(cardinal.DeterministicHash() != terrainChanged.DeterministicHash(), "Map definition was absent from hash.");
+}
+
 static CombatResolver Resolver() => new();
 
-static CombatState SampleState() => new(SampleEntities());
+static CombatState SampleState() => new(OpenMap(), CombatRules.SpikeDefault, SampleEntities());
+
+static BattleMap OpenMap() => new(32, 32);
 
 static IEnumerable<CombatEntity> SampleEntities()
 {

@@ -5,4 +5,6 @@ public sealed record CombatEntity(
     Cell Anchor,
     Footprint Footprint,
     EntityFlags Flags,
-    IntegrityPool Integrity);
+    IntegrityPool Integrity,
+    int NextActAt = 0,
+    int ActionInterval = 10);

@@ -36,12 +36,12 @@ Read `canon-guard` first. This skill governs the simulation layer.
 
 ## 3. Grid and positioning (v0 subset)
 
-- Square grid, **4-directional movement**, cost 1 per tile (FFT precedent — kills diagonal ambiguity in LOS, cover, knockback, and surround counting).
+- Square grid with **configurable movement topology** during the spike: `CardinalFour` and `EightConnected` run through the same pathfinder. Both cost 1 per logical step and forbid cutting blocked corners. Do not promote either policy to canon until the representative encounter compares them.
 - **4 facings.** Flank = attacker in the target's side or rear arc.
 - Integer elevation bands. A single `Vertical` stat covers climb/jump.
 - **Cover lives on tile edges** (half / full), not on "adjacent to a wall" heuristics. Edge cover is deterministic and drawable.
 - LOS: tile-center to tile-center with elevation blocking.
-- **Adjacency-8 is used for spatial-pressure concepts only** (`Surrounded`, knockback direction snapping). Movement stays 4-way. Document this asymmetry wherever it appears; it is intentional.
+- Eight-direction adjacency remains available for spatial-pressure concepts (`Surrounded`, knockback direction snapping) independently of the selected movement topology.
 - v0 map: 12×12 to 16×16, three elevation bands.
 
 ## 4. Initiative — tick clock with hard invariants
