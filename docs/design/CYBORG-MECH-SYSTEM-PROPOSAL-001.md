@@ -172,3 +172,9 @@ The first three-policy comparison reuses one effect grammar instead of creating 
 - Redline: boarded zero-Charge `Damage` baseline.
 
 The output signatures are intentionally different, but this does not yet validate meaningful deployment choices. Redline alternator recovery remains deferred until an encounter demonstrates a real recovery problem. The next experiment must compare stay-versus-transition decisions under enemy pressure.
+
+## 13. Milestone 023 implementation note
+
+The first pressure harness compares staying versus changing deployment across two player activations and one ordinary enemy attack. Its intended evidence is narrower than balance: deployment must change damage, prevention, exposure or stored Charge in a forecastable way.
+
+The experiment intentionally refuses to report threatened-cell coverage because attack range is not yet an approved kernel concept. That metric will be added only after one reusable range definition exists; it will not be fabricated inside a presentation tool.

@@ -51,7 +51,11 @@ var tests = new (string Name, Action Run)[]
     ("specialty policy scripts preserve forecast parity", SpecialtyPolicyForecastParity),
     ("Bulwark converts Charge into Guard while boarded", BulwarkConvertsChargeToGuard),
     ("Redline strike preserves Charge while dealing damage", RedlinePreservesCharge),
-    ("boarded effects reject wrong mode and insufficient Charge atomically", BoardedEffectsRejectAtomically)
+    ("boarded effects reject wrong mode and insufficient Charge atomically", BoardedEffectsRejectAtomically),
+    ("pressure choices preserve forecast parity", PressureChoicesPreserveForecastParity),
+    ("Bulwark stay prevents damage while transition projects damage", BulwarkPressureTradeoff),
+    ("Remote Arsenal transition trades stored Charge for pressure", RemoteArsenalPressureTradeoff),
+    ("Redline transition protects pilot while reducing output", RedlinePressureTradeoff)
 };
 
 var failures = 0;
@@ -817,6 +821,68 @@ static void BoardedEffectsRejectAtomically()
         "Insufficient-Charge effect stack partially mutated state.");
 }
 
+static void PressureChoicesPreserveForecastParity()
+{
+    foreach (var policy in Enum.GetValues<CyborgSpecialtyPolicy>())
+    foreach (var choice in Enum.GetValues<DeploymentChoice>())
+        RunPressure(policy, choice);
+}
+
+static void BulwarkPressureTradeoff()
+{
+    var stay = RunPressure(CyborgSpecialtyPolicy.Bulwark, DeploymentChoice.Stay);
+    var transition = RunPressure(CyborgSpecialtyPolicy.Bulwark, DeploymentChoice.Transition);
+    Assert(stay.Prevented == 6 && stay.Damage == 0 && stay.Mode == DeploymentMode.Docked,
+        "Bulwark stay signature changed.");
+    Assert(transition.Prevented == 0 && transition.Damage == 12 && transition.Mode == DeploymentMode.Remote,
+        "Bulwark transition signature changed.");
+}
+
+static void RemoteArsenalPressureTradeoff()
+{
+    var stay = RunPressure(CyborgSpecialtyPolicy.RemoteArsenal, DeploymentChoice.Stay);
+    var transition = RunPressure(CyborgSpecialtyPolicy.RemoteArsenal, DeploymentChoice.Transition);
+    Assert(stay.Charge == 8 && stay.Damage == 0,
+        "Remote Arsenal stay did not preserve the stored-Charge baseline.");
+    Assert(transition.Charge == 0 && transition.Damage == 12,
+        "Remote Arsenal transition did not exchange Charge for pressure.");
+}
+
+static void RedlinePressureTradeoff()
+{
+    var stay = RunPressure(CyborgSpecialtyPolicy.Redline, DeploymentChoice.Stay);
+    var transition = RunPressure(CyborgSpecialtyPolicy.Redline, DeploymentChoice.Transition);
+    Assert(stay.Damage == 24 && stay.PilotLoss == 8 && stay.MechLoss == 0,
+        "Redline stay signature changed.");
+    Assert(transition.Damage == 7 && transition.PilotLoss == 0 && transition.MechLoss == 8,
+        "Redline transition did not transfer exposure from pilot to mech.");
+}
+
+static PressureOutcome RunPressure(CyborgSpecialtyPolicy policy, DeploymentChoice choice)
+{
+    var state = SpecialtyPressureExperimentScenario.Create(policy);
+    var resolver = Resolver();
+    var forecast = new CombatForecast(resolver);
+    var prevented = 0;
+    foreach (var command in SpecialtyPressureExperimentScenario.Script(policy, choice))
+    {
+        var predicted = forecast.Evaluate(state, command);
+        Assert(predicted.IsLegal, predicted.RejectionReason ?? $"{policy}/{choice} rejected.");
+        var actual = resolver.Resolve(state, command);
+        Equal(predicted.Events, actual.Events);
+        Assert(predicted.ResultingStateHash == actual.ResultingStateHash,
+            $"{policy}/{choice} forecast hash diverged.");
+        prevented += actual.Events.Sum(item => item.Payload is GuardDamagedEvent guard ? guard.Amount : 0);
+    }
+    var pilot = state.Entities[SpecialtyPressureExperimentScenario.Pilot];
+    var mech = state.Entities[SpecialtyPressureExperimentScenario.Mech];
+    var warden = state.Entities[SpecialtyPressureExperimentScenario.Warden];
+    return new PressureOutcome(24 - warden.Integrity.Current, prevented,
+        16 - pilot.Integrity.Current, 30 - mech.Integrity.Current,
+        state.Resources[SpecialtyPressureExperimentScenario.Charge].Current,
+        pilot.Flags == EntityFlags.Docked ? DeploymentMode.Docked : DeploymentMode.Remote);
+}
+
 static CombatResolver Resolver() => new();
 
 static CombatState SampleState() => new(
@@ -851,3 +917,11 @@ static void Throws<TException>(Action action) where TException : Exception
     catch (TException) { return; }
     throw new InvalidOperationException($"Expected {typeof(TException).Name}.");
 }
+
+sealed record PressureOutcome(
+    int Damage,
+    int Prevented,
+    int PilotLoss,
+    int MechLoss,
+    int Charge,
+    DeploymentMode Mode);

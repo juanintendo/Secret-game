@@ -87,4 +87,29 @@ public sealed class KernelReplayTests
             }
         }
     }
+
+    [Test]
+    public void PressureChoicesPreserveForecastParity()
+    {
+        foreach (var policy in new[]
+                 {
+                     CyborgSpecialtyPolicy.Bulwark,
+                     CyborgSpecialtyPolicy.RemoteArsenal,
+                     CyborgSpecialtyPolicy.Redline
+                 })
+        foreach (var choice in new[] { DeploymentChoice.Stay, DeploymentChoice.Transition })
+        {
+            var state = SpecialtyPressureExperimentScenario.Create(policy);
+            var resolver = new CombatResolver();
+            var forecast = new CombatForecast(resolver);
+            foreach (var command in SpecialtyPressureExperimentScenario.Script(policy, choice))
+            {
+                var predicted = forecast.Evaluate(state, command);
+                Assert.That(predicted.IsLegal, Is.True, predicted.RejectionReason);
+                var actual = resolver.Resolve(state, command);
+                Assert.That(actual.Events, Is.EqualTo(predicted.Events));
+                Assert.That(actual.ResultingStateHash, Is.EqualTo(predicted.ResultingStateHash));
+            }
+        }
+    }
 }

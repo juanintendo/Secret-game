@@ -1,6 +1,6 @@
 # Milestone 022 — cyborg Specialty policy comparison
 
-**Status:** implemented in source; awaiting Windows .NET and Unity verification.
+**Status:** core comparison passed on Windows; one host-policy gate and the final Unity result remain to be captured.
 
 **Design authority:** all three policies and every number below remain `RECOMMENDATION — NOT CANON`.
 
@@ -87,3 +87,14 @@ Accept the implementation only when Simulation passes **50/50**, Tactics **18/18
 ## Next falsifying experiment
 
 If accepted, build one compact encounter where each policy must choose between staying in its current deployment and changing it. Measure prevented damage, dealt damage, threatened cells, Charge, AP and stalled turns. That encounter—not this table—decides whether the three policies have genuine tactical identities.
+
+## Windows evidence received
+
+At commit `7b4d3bec6c0a98d84a650d450a17c591ade3a291`:
+
+- Simulation passed **50/50** and retained the historical Gate A hashes.
+- The three-policy executable comparison ended in `PASS` with the expected table.
+- Unity synchronized **35/35** source files, but the captured transcript ended while the editor was still running.
+- Tactics did not report a code failure: Windows Smart App Control blocked the generated native apphost before the managed test assembly started. Milestone 023 adds a signed-`dotnet`-host runner for this environment.
+
+The missing host observations remain explicit; they are not silently promoted to passes.
