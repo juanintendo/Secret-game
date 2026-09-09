@@ -15,7 +15,14 @@ var tests = new (string Name, Action Run)[]
     ("effect application cap rejects ninth effect", EffectCap),
     ("reaction consumes charge and resolves at depth zero", ReactionResolves),
     ("reaction per-unit and per-effect caps reject atomically", ReactionCaps),
-    ("text forecast exposes displacement stop and reaction", TextForecastExposesStack)
+    ("text forecast exposes displacement stop and reaction", TextForecastExposesStack),
+    ("Guard qualifier consumes declared Guard before Integrity", GuardQualifier),
+    ("Intercept qualifier redirects adjacent ally damage", InterceptQualifier),
+    ("Reaction Shot qualifier fires only on band entry", ReactionShotQualifier),
+    ("Piercing bypasses Guard", PiercingBypassesGuard),
+    ("mass tiers reduce displacement without changing footprint", MassReducesDisplacement),
+    ("Anchored degrades displacement to Staggered", AnchoredDegradesControl),
+    ("2x2 pathing reaches objective on four narrow map variants", FourNarrowMapVariants)
 };
 var failures = 0;
 foreach (var test in tests)
@@ -139,6 +146,119 @@ static void TextForecastExposesStack()
         "Forecast omitted displacement path or stop reason.");
     Assert(text.Contains("TRIGGER reaction.test", StringComparison.Ordinal), "Forecast omitted reaction trigger.");
 }
+
+static void GuardQualifier()
+{
+    var target = Target(2, 3, 1) with
+    {
+        Guard = new GuardPool(3),
+        Conditions = new ConditionSet(new[] { new AppliedCondition(ConditionKind.Guarded, 1, new EntityId(2)) })
+    };
+    var state = State(new BattleMap(8, 5), target);
+    var baseCommand = new EffectStackCommand(new EntityId(1), 1, new CombatEffect[] { new DamageEffect(target.Id, 4) });
+    var qualified = Qualifier().Qualify(state, baseCommand,
+        new[] { new ReactionProfile(target.Id, new[] { "reaction.guard" }) });
+    var result = new CombatResolver().Resolve(state, qualified);
+    Assert(result.Events.Any(item => item.Payload is ReactionTriggeredEvent trigger && trigger.ReactionId == "reaction.guard"),
+        "Declared Guard did not trigger.");
+    Assert(state.Entities[target.Id].Guard.Current == 0 && state.Entities[target.Id].Integrity.Current == 9,
+        "Guard did not absorb damage before Integrity.");
+}
+
+static void InterceptQualifier()
+{
+    var attacker = new CombatEntity(new EntityId(101), new Cell(6, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(10, 10))
+        { Faction = Faction.Enemy };
+    var ally = new CombatEntity(new EntityId(2), new Cell(3, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(10, 10));
+    var bulwark = new CombatEntity(new EntityId(3), new Cell(3, 2), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(10, 10));
+    var state = new CombatState(new BattleMap(8, 5), CombatRules.SpikeDefault, new[] { attacker, ally, bulwark }, attacker.Id);
+    var baseCommand = new EffectStackCommand(attacker.Id, 1, new CombatEffect[] { new DamageEffect(ally.Id, 3) });
+    var qualified = Qualifier().Qualify(state, baseCommand,
+        new[] { new ReactionProfile(bulwark.Id, new[] { "reaction.bulwark-intercept" }) });
+    var result = new CombatResolver().Resolve(state, qualified);
+    Assert(result.Events.Any(item => item.Payload is DamageRedirectedEvent redirect && redirect.RedirectedTargetId == bulwark.Id),
+        "Intercept did not redirect damage.");
+    Assert(state.Entities[ally.Id].Integrity.Current == 10, "Intercepted ally still took damage.");
+    Assert(state.Entities[bulwark.Id].Guard.Current == 0 && state.Entities[bulwark.Id].Integrity.Current == 9,
+        "Bulwark response did not grant then spend Guard before taking overflow.");
+}
+
+static void ReactionShotQualifier()
+{
+    var attacker = new CombatEntity(new EntityId(101), new Cell(7, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(10, 10))
+        { Faction = Faction.Enemy };
+    var mover = new CombatEntity(new EntityId(102), new Cell(5, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(10, 10))
+        { Faction = Faction.Enemy };
+    var gunslinger = new CombatEntity(new EntityId(3), new Cell(1, 1), new Footprint(1, 1), EntityFlags.Active, new IntegrityPool(10, 10));
+    var state = new CombatState(new BattleMap(9, 5), CombatRules.SpikeDefault, new[] { attacker, mover, gunslinger }, attacker.Id);
+    var baseCommand = new EffectStackCommand(attacker.Id, 1,
+        new CombatEffect[] { new DisplaceEffect(mover.Id, CompassDirection.West, 1, 0) });
+    var qualified = Qualifier().Qualify(state, baseCommand,
+        new[] { new ReactionProfile(gunslinger.Id, new[] { "reaction.gunslinger-shot" }, 1, 3) });
+    new CombatResolver().Resolve(state, qualified);
+    Assert(state.Entities[mover.Id].Anchor == new Cell(4, 1), "Mover did not enter reaction band.");
+    Assert(state.Entities[mover.Id].Integrity.Current == 8, "Reaction Shot did not apply authored damage.");
+    Assert(state.Entities[gunslinger.Id].ReactionCharges == 0, "Reaction Shot did not consume charge.");
+}
+
+static void PiercingBypassesGuard()
+{
+    var target = Target(2, 3, 1) with { Guard = new GuardPool(4) };
+    var state = State(new BattleMap(8, 5), target);
+    new CombatResolver().Resolve(state,
+        new EffectStackCommand(new EntityId(1), 1, new CombatEffect[] { new DamageEffect(target.Id, 3, true) }));
+    Assert(state.Entities[target.Id].Guard.Current == 4 && state.Entities[target.Id].Integrity.Current == 7,
+        "Piercing did not bypass Guard.");
+}
+
+static void MassReducesDisplacement()
+{
+    var light = Target(2, 2, 1);
+    var heavy = Target(3, 2, 3) with { Mass = MassClass.Heavy };
+    var state = State(new BattleMap(9, 6), light, heavy);
+    var command = new EffectStackCommand(new EntityId(1), 1, new CombatEffect[]
+    {
+        new DisplaceEffect(light.Id, CompassDirection.East, 3, 0),
+        new DisplaceEffect(heavy.Id, CompassDirection.East, 3, 0)
+    });
+    new CombatResolver().Resolve(state, command);
+    Assert(state.Entities[light.Id].Anchor == new Cell(5, 1), "Light displacement distance changed.");
+    Assert(state.Entities[heavy.Id].Anchor == new Cell(3, 3), "Heavy displacement did not reduce by two tiers.");
+}
+
+static void AnchoredDegradesControl()
+{
+    var anchored = Target(2, 3, 1) with { Mass = MassClass.Anchored };
+    var state = State(new BattleMap(8, 5), anchored);
+    new CombatResolver().Resolve(state, new EffectStackCommand(new EntityId(1), 1,
+        new CombatEffect[] { new DisplaceEffect(anchored.Id, CompassDirection.East, 4, 1) }));
+    Assert(state.Entities[anchored.Id].Anchor == new Cell(3, 1), "Anchored target moved.");
+    Assert(state.Entities[anchored.Id].Conditions.Items.Any(item => item.Kind == ConditionKind.Staggered),
+        "Anchored target did not receive degraded control effect.");
+}
+
+static void FourNarrowMapVariants()
+{
+    var variants = new[]
+    {
+        Enumerable.Range(0, 14).Where(y => y is not 5 and not 6).Select(y => new TerrainTile(new Cell(6, y), 0, true)),
+        Enumerable.Range(0, 14).Where(x => x is not 5 and not 6).Select(x => new TerrainTile(new Cell(x, 6), 0, true)),
+        new[] { new Cell(5, 5), new Cell(8, 8), new Cell(5, 9), new Cell(9, 5) }.Select(cell => new TerrainTile(cell, 0, true)),
+        Enumerable.Range(0, 14).Where(y => y is not 2 and not 3).Select(y => new TerrainTile(new Cell(4, y), 0, true))
+            .Concat(Enumerable.Range(0, 14).Where(y => y is not 9 and not 10).Select(y => new TerrainTile(new Cell(9, y), 0, true)))
+    };
+    for (var index = 0; index < variants.Length; index++)
+    {
+        var mech = new CombatEntity(new EntityId(2), new Cell(1, 1), new Footprint(2, 2), EntityFlags.Active, new IntegrityPool(20, 20))
+            { Mass = MassClass.Heavy };
+        var state = new CombatState(new BattleMap(14, 14, variants[index]), CombatRules.SpikeDefault, new[] { mech });
+        var path = new GridPathfinder().FindPath(state, mech, new Cell(10, 10));
+        Assert(path is not null && path.StepCount > 0 && path.StepCount < 100,
+            $"2x2 mech failed narrow map variant {index + 1}.");
+    }
+}
+
+static ReactionQualifier Qualifier() => new(new ContentLoader().Load("content"));
 
 static EffectStackCommand Stack() => new(new EntityId(1), 1, new CombatEffect[]
 {

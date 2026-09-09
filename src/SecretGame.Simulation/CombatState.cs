@@ -77,6 +77,14 @@ public sealed class CombatState
                     Integrity = new IntegrityPool(damaged.After, target.Integrity.Maximum)
                 };
                 break;
+            case GuardGrantedEvent granted:
+                var guardTarget = Require(granted.TargetId);
+                _entities[granted.TargetId] = guardTarget with { Guard = guardTarget.Guard.Grant(granted.Amount) };
+                break;
+            case GuardDamagedEvent guardDamaged:
+                var guardedTarget = Require(guardDamaged.TargetId);
+                _entities[guardDamaged.TargetId] = guardedTarget with { Guard = guardedTarget.Guard.Absorb(guardDamaged.Amount) };
+                break;
             case DeploymentModeChangedEvent deployment:
                 var pilot = Require(deployment.PilotId);
                 var mech = Require(deployment.MechId);
@@ -125,6 +133,7 @@ public sealed class CombatState
                 _entities[spentReaction.EntityId] = reactor with { ReactionCharges = spentReaction.After };
                 break;
             case ReactionTriggeredEvent:
+            case DamageRedirectedEvent:
                 break;
             default:
                 throw new InvalidOperationException($"Unsupported event type {payload.GetType().Name}.");
@@ -164,6 +173,8 @@ public sealed class CombatState
                 writer.Write((int)entity.Faction);
                 writer.Write(entity.ActionPoints);
                 writer.Write(entity.ReactionCharges);
+                writer.Write(entity.Guard.Current);
+                writer.Write((int)entity.Mass);
                 writer.Write(entity.Conditions.Items.Count);
                 foreach (var condition in entity.Conditions.Items)
                 {

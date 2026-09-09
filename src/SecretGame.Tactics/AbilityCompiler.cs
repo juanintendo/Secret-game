@@ -22,6 +22,7 @@ public sealed class AbilityCompiler
         CompassDirection displacementDirection) => effect.Type switch
     {
         EffectType.Damage => new DamageEffect(targetId, RequiredPositive(effect.Amount, "damage amount")),
+        EffectType.GrantGuard => new GrantGuardEffect(targetId, RequiredPositive(effect.Amount, "Guard amount")),
         EffectType.ApplyStatus => new ApplyConditionEffect(
             targetId,
             ParseCondition(effect.Status),

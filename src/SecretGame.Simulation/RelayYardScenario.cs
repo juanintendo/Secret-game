@@ -10,7 +10,7 @@ public static class RelayYardScenario
     public static readonly EntityId Striker = new(901);
     public static readonly EntityId RelayTech = new(902);
 
-    public static CombatState Create()
+    public static CombatState Create(Footprint? mechFootprint = null)
     {
         var terrain = Enumerable.Range(0, 12)
             .Where(y => y is not 5 and not 6)
@@ -27,7 +27,7 @@ public static class RelayYardScenario
         {
             Unit(Human, new Cell(1, 5), 12, 9),
             Unit(Cyborg, new Cell(1, 7), 16, 11),
-            Unit(Mech, new Cell(3, 8), 30, 12, new Footprint(2, 2)),
+            Unit(Mech, new Cell(3, 8), 30, 12, mechFootprint ?? new Footprint(2, 2)) with { Mass = MassClass.Heavy },
             Unit(Synthetic, new Cell(2, 6), 10, 8),
             Unit(Warden, new Cell(8, 5), 18, 10) with { Faction = Faction.Enemy },
             Unit(Striker, new Cell(8, 7), 12, 7) with { Faction = Faction.Enemy },

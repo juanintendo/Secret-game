@@ -54,6 +54,10 @@ public sealed class TextForecastRenderer
             $"DISPLACE {RelayYardScenario.NameOf(displaced.TargetId)}: {displaced.From} -> {displaced.To} ({displaced.Path.StepCount} steps, {displaced.Stop})",
         IntegrityDamagedEvent damaged =>
             $"DAMAGE {RelayYardScenario.NameOf(damaged.TargetId)}: {damaged.Before} -> {damaged.After}",
+        GuardGrantedEvent granted =>
+            $"GUARD {RelayYardScenario.NameOf(granted.TargetId)}: {granted.Before} -> {granted.After}",
+        GuardDamagedEvent damaged =>
+            $"GUARD HIT {RelayYardScenario.NameOf(damaged.TargetId)}: {damaged.Before} -> {damaged.After}",
         ConditionAppliedEvent condition =>
             $"STATUS {RelayYardScenario.NameOf(condition.TargetId)} gains {condition.Kind} ({condition.Duration})",
         ConditionsAdvancedEvent advanced =>
@@ -64,6 +68,8 @@ public sealed class TextForecastRenderer
             $"REACTION SPENT {RelayYardScenario.NameOf(spent.EntityId)}: {spent.Before} -> {spent.After}",
         ReactionTriggeredEvent triggered =>
             $"TRIGGER {triggered.ReactionId} by {RelayYardScenario.NameOf(triggered.ReactorId)} after effect {triggered.TriggerEffectIndex}",
+        DamageRedirectedEvent redirected =>
+            $"REDIRECT {RelayYardScenario.NameOf(redirected.OriginalTargetId)} -> {RelayYardScenario.NameOf(redirected.RedirectedTargetId)}",
         DeploymentModeChangedEvent deployment =>
             $"MODE {RelayYardScenario.NameOf(deployment.PilotId)} + {RelayYardScenario.NameOf(deployment.MechId)}: {deployment.Mode}",
         _ => payload.GetType().Name

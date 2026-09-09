@@ -2,7 +2,9 @@ namespace SecretGame.Simulation;
 
 public abstract record CombatEffect;
 
-public sealed record DamageEffect(EntityId TargetId, int Amount) : CombatEffect;
+public sealed record DamageEffect(EntityId TargetId, int Amount, bool Piercing = false) : CombatEffect;
+
+public sealed record GrantGuardEffect(EntityId TargetId, int Amount) : CombatEffect;
 
 public sealed record ApplyConditionEffect(
     EntityId TargetId,
@@ -19,7 +21,15 @@ public sealed record ReactionInvocation(
     EntityId ReactorId,
     int TriggerEffectIndex,
     string ReactionId,
-    IReadOnlyList<CombatEffect> ResponseEffects);
+    IReadOnlyList<CombatEffect> ResponseEffects,
+    ReactionTiming Timing = ReactionTiming.After,
+    EntityId? RedirectTargetId = null);
+
+public enum ReactionTiming
+{
+    Before,
+    After
+}
 
 public enum CompassDirection
 {

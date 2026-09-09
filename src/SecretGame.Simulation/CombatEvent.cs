@@ -15,6 +15,20 @@ public sealed record IntegrityDamagedEvent(
     int Before,
     int After) : CombatEvent;
 
+public sealed record GuardGrantedEvent(
+    EntityId SourceId,
+    EntityId TargetId,
+    int Amount,
+    int Before,
+    int After) : CombatEvent;
+
+public sealed record GuardDamagedEvent(
+    EntityId SourceId,
+    EntityId TargetId,
+    int Amount,
+    int Before,
+    int After) : CombatEvent;
+
 public sealed record DeploymentModeChangedEvent(
     EntityId PilotId,
     EntityId MechId,
@@ -50,7 +64,8 @@ public enum DisplacementStop
 {
     Completed,
     Blocked,
-    Occupied
+    Occupied,
+    Resisted
 }
 
 public sealed record EntityDisplacedEvent(
@@ -75,6 +90,11 @@ public sealed record ReactionTriggeredEvent(
     EntityId ReactorId,
     string ReactionId,
     int TriggerEffectIndex) : CombatEvent;
+
+public sealed record DamageRedirectedEvent(
+    EntityId ReactorId,
+    EntityId OriginalTargetId,
+    EntityId RedirectedTargetId) : CombatEvent;
 
 public sealed record ResolvedEvent(
     long Sequence,
