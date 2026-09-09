@@ -31,9 +31,34 @@ for (var encounter = 0; encounter < encounterCount; encounter++)
                 .OrderBy(candidate => candidate.Id)
                 .ToArray();
             var target = targets[random.Next(targets.Length)];
-            CombatCommand command = random.Next(3) == 0
-                ? new ApplyConditionCommand(actorId, target.Id, ConditionKind.Marked, 1 + random.Next(2))
-                : new DamageCommand(actorId, target.Id, 1 + random.Next(4));
+            CombatCommand command;
+            if (random.Next(4) == 0)
+            {
+                command = new ApplyConditionCommand(actorId, target.Id, ConditionKind.Marked, 1 + random.Next(2));
+            }
+            else
+            {
+                var effects = new List<CombatEffect> { new DamageEffect(target.Id, 1 + random.Next(4)) };
+                if (random.Next(3) == 0)
+                    effects.Add(new DisplaceEffect(target.Id, (CompassDirection)random.Next(8), 1 + random.Next(2), 1));
+                var reactor = state.Entities.Values
+                    .Where(candidate => candidate.Faction == target.Faction
+                        && candidate.Id != target.Id
+                        && candidate.ReactionCharges > 0)
+                    .OrderBy(candidate => candidate.Id)
+                    .FirstOrDefault();
+                var reactions = reactor is not null && random.Next(2) == 0
+                    ? new[]
+                    {
+                        new ReactionInvocation(
+                            reactor.Id,
+                            0,
+                            "fuzz.reaction-shot",
+                            new CombatEffect[] { new DamageEffect(actorId, 1) })
+                    }
+                    : Array.Empty<ReactionInvocation>();
+                command = new EffectStackCommand(actorId, 1, effects, reactions);
+            }
             Resolve(command);
         }
         Resolve(new EndActivationCommand(actorId));
@@ -54,6 +79,10 @@ for (var encounter = 0; encounter < encounterCount; encounter++)
             $"Forecast events diverged in encounter {encounter}.");
         Require(state.ActiveEntityId is null || state.Entities[state.ActiveEntityId.Value].ActionPoints is >= 0 and <= 2,
             $"AP invariant failed in encounter {encounter}.");
+        var reactionEvents = result.Events.Select(item => item.Payload).OfType<ReactionTriggeredEvent>().ToArray();
+        Require(reactionEvents.Length <= 2, $"Reaction cap failed in encounter {encounter}.");
+        Require(reactionEvents.Select(item => item.ReactorId).Distinct().Count() == reactionEvents.Length,
+            $"A unit reacted twice in encounter {encounter}.");
         commands.Add(command);
         commandCount++;
         eventCount += result.Events.Count;

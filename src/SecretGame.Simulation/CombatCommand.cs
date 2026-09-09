@@ -20,3 +20,9 @@ public sealed record ApplyConditionCommand(
     EntityId TargetId,
     ConditionKind Kind,
     int Duration) : CombatCommand;
+
+public sealed record EffectStackCommand(
+    EntityId SourceId,
+    int CostAp,
+    IReadOnlyList<CombatEffect> Effects,
+    IReadOnlyList<ReactionInvocation>? Reactions = null) : CombatCommand;

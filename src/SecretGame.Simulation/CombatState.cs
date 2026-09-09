@@ -26,6 +26,8 @@ public sealed class CombatState
                 throw new ArgumentException($"Entity {entity.Id} has invalid initiative values.", nameof(entities));
             if (entity.ActionPoints < 0 || entity.ActionPoints > 2)
                 throw new ArgumentException($"Entity {entity.Id} has invalid action points.", nameof(entities));
+            if (entity.ReactionCharges is < 0 or > 1)
+                throw new ArgumentException($"Entity {entity.Id} has invalid reaction charges.", nameof(entities));
             if (!entity.Flags.Spatial) continue;
             foreach (var cell in entity.Footprint.OccupiedCells(entity.Anchor))
             {
@@ -64,6 +66,9 @@ public sealed class CombatState
         {
             case EntityMovedEvent moved:
                 _entities[moved.EntityId] = Require(moved.EntityId) with { Anchor = moved.To };
+                break;
+            case EntityDisplacedEvent displaced:
+                _entities[displaced.TargetId] = Require(displaced.TargetId) with { Anchor = displaced.To };
                 break;
             case IntegrityDamagedEvent damaged:
                 var target = Require(damaged.TargetId);
@@ -111,6 +116,16 @@ public sealed class CombatState
                 var advancedEntity = Require(advanced.EntityId);
                 _entities[advanced.EntityId] = advancedEntity with { Conditions = advanced.After };
                 break;
+            case ReactionChargeRefreshedEvent refreshedReaction:
+                var reactionOwner = Require(refreshedReaction.EntityId);
+                _entities[refreshedReaction.EntityId] = reactionOwner with { ReactionCharges = refreshedReaction.After };
+                break;
+            case ReactionChargeSpentEvent spentReaction:
+                var reactor = Require(spentReaction.EntityId);
+                _entities[spentReaction.EntityId] = reactor with { ReactionCharges = spentReaction.After };
+                break;
+            case ReactionTriggeredEvent:
+                break;
             default:
                 throw new InvalidOperationException($"Unsupported event type {payload.GetType().Name}.");
         }
@@ -148,6 +163,7 @@ public sealed class CombatState
                 writer.Write(entity.ActionInterval);
                 writer.Write((int)entity.Faction);
                 writer.Write(entity.ActionPoints);
+                writer.Write(entity.ReactionCharges);
                 writer.Write(entity.Conditions.Items.Count);
                 foreach (var condition in entity.Conditions.Items)
                 {

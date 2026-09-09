@@ -46,6 +46,36 @@ public sealed record ConditionsAdvancedEvent(
     ConditionSet Before,
     ConditionSet After) : CombatEvent;
 
+public enum DisplacementStop
+{
+    Completed,
+    Blocked,
+    Occupied
+}
+
+public sealed record EntityDisplacedEvent(
+    EntityId SourceId,
+    EntityId TargetId,
+    Cell From,
+    Cell To,
+    CellPath Path,
+    DisplacementStop Stop) : CombatEvent;
+
+public sealed record ReactionChargeRefreshedEvent(
+    EntityId EntityId,
+    int Before,
+    int After) : CombatEvent;
+
+public sealed record ReactionChargeSpentEvent(
+    EntityId EntityId,
+    int Before,
+    int After) : CombatEvent;
+
+public sealed record ReactionTriggeredEvent(
+    EntityId ReactorId,
+    string ReactionId,
+    int TriggerEffectIndex) : CombatEvent;
+
 public sealed record ResolvedEvent(
     long Sequence,
     CombatEvent Payload,

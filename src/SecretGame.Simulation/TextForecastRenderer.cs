@@ -50,12 +50,20 @@ public sealed class TextForecastRenderer
             $"END {RelayYardScenario.NameOf(ended.EntityId)}",
         EntityMovedEvent moved =>
             $"MOVE {RelayYardScenario.NameOf(moved.EntityId)}: {moved.From} -> {moved.To} ({moved.Path.StepCount} steps)",
+        EntityDisplacedEvent displaced =>
+            $"DISPLACE {RelayYardScenario.NameOf(displaced.TargetId)}: {displaced.From} -> {displaced.To} ({displaced.Path.StepCount} steps, {displaced.Stop})",
         IntegrityDamagedEvent damaged =>
             $"DAMAGE {RelayYardScenario.NameOf(damaged.TargetId)}: {damaged.Before} -> {damaged.After}",
         ConditionAppliedEvent condition =>
             $"STATUS {RelayYardScenario.NameOf(condition.TargetId)} gains {condition.Kind} ({condition.Duration})",
         ConditionsAdvancedEvent advanced =>
             $"STATUS TICK {RelayYardScenario.NameOf(advanced.EntityId)}: {advanced.Before.Items.Count} -> {advanced.After.Items.Count}",
+        ReactionChargeRefreshedEvent refreshed =>
+            $"REACTION {RelayYardScenario.NameOf(refreshed.EntityId)}: {refreshed.Before} -> {refreshed.After}",
+        ReactionChargeSpentEvent spent =>
+            $"REACTION SPENT {RelayYardScenario.NameOf(spent.EntityId)}: {spent.Before} -> {spent.After}",
+        ReactionTriggeredEvent triggered =>
+            $"TRIGGER {triggered.ReactionId} by {RelayYardScenario.NameOf(triggered.ReactorId)} after effect {triggered.TriggerEffectIndex}",
         DeploymentModeChangedEvent deployment =>
             $"MODE {RelayYardScenario.NameOf(deployment.PilotId)} + {RelayYardScenario.NameOf(deployment.MechId)}: {deployment.Mode}",
         _ => payload.GetType().Name
