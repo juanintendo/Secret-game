@@ -6,7 +6,7 @@ Creative direction: Juan + Mina. Technical direction: Mina.
 
 ## Status
 
-Implementation spike in progress. The engine-free deterministic simulation began on 2026-09-09 and **Gate A passed on 2026-09-09** with cross-machine replay parity and external forecast legibility at 4/5. Unity 6.3 LTS + URP now enters its technical-art spike and remains **provisional** until that spike passes.
+Implementation spike in progress. The engine-free deterministic simulation began on 2026-09-09 and **Gate A passed on 2026-09-09** with cross-machine replay parity and external forecast legibility at 4/5. The managed bootstrap subsequently passed **3/3 Unity Edit Mode tests** on Windows under Unity 6.3 LTS `6000.3.23f1`, URP `17.3.0`, with Smart App Control enabled and Burst disabled only for that test process. The engine remains provisional until the representative technical-art spike passes.
 
 ## Layout
 
@@ -62,7 +62,7 @@ Gate A is closed. Before opening the Unity project, generate its verified kernel
 powershell -ExecutionPolicy Bypass -File .\scripts\sync-unity-kernel.ps1
 ```
 
-Then open `unity/SecretGame` with Unity 6.3 LTS and run Edit Mode tests. The Unity/Astra transition evidence is tracked in `docs/implementation/GATE-A-CLOSEOUT.md` and `docs/implementation/MILESTONE-009.md`.
+Then open `unity/SecretGame` with Unity 6.3 LTS and run Edit Mode tests. The Unity/Astra transition evidence begins in `docs/implementation/GATE-A-CLOSEOUT.md`; the verified Windows baseline is recorded in `docs/implementation/MILESTONE-019.md`.
 
 ## Canon home
 

@@ -11,9 +11,9 @@
 - Gate A replay hashes:
   - 1×1: `716BE2E159FBB184B422C33910A6A0513FEF8B034D53E531F76E8A2BAACAF0B4`
   - 2×2: `533CEDD457740A8604C19265EFEF864E361325152A10777E32C1C72D62260689`
-- Unity baseline is provisionally pinned to Unity 6.3 LTS `6000.3.0f1` + URP `17.3.0`.
+- Unity baseline is verified on Windows and pinned to Unity 6.3 LTS `6000.3.23f1` + URP `17.3.0`.
 - The source-controlled Unity bootstrap exists at `unity/SecretGame`; the authoritative kernel remains `src/SecretGame.Simulation`.
-- At this checkpoint, Juan has not yet reported a successful Windows Unity batch bootstrap for Milestone 009. Do not claim that Unity compilation or Edit Mode tests passed until that evidence is returned.
+- Windows Unity batch bootstrap passed 3/3 Edit Mode tests with exit code 0, Smart App Control enabled and Burst disabled only for the managed test process. Milestone 019 records the accepted generated baseline.
 - The first Windows attempt synchronized 31/31 kernel files, then exposed a PowerShell runner defect: direct invocation of the GUI editor left `$LASTEXITCODE` unset. Milestone 011 replaces that mechanism with an explicit waited process handle. This is not yet Unity test evidence.
 - The next waited run reached compilation and exposed one compatibility mismatch: Unity selected C# 9 while the kernel uses C# 10 syntax. Milestone 012 adds a pinned `-langversion:10.0` compiler-response probe; Unity tests remain pending until that probe runs on Windows.
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
@@ -22,6 +22,7 @@
 - Windows Code Integrity then proved Smart App Control was blocking unsigned DLLs created by Unity Burst JIT under `Library/BurstCache/JIT`. Milestone 016 disables Burst only for the managed bootstrap test process; global Windows security remains enabled. Burst production use remains a later explicit decision.
 - The first SDK pin used `8.0.100 + latestPatch`, which cannot roll across feature bands to the installed `8.0.425`. Milestone 017 corrects the request to `8.0.400 + latestPatch`. The failed commands never compiled or ran tests.
 - With SDK 8.0.425 selected, Simulation passed 33/33. Tactics then revealed that the repository-wide C# 10 pin rejected Content's established C# 11 `required` members. Milestone 018 pins the .NET solution to C# 11 while keeping only the Unity Simulation boundary on C# 10. Unity Edit Mode already passed 3/3 independently.
+- The generated Windows baseline was imported from a 27-file archive and reviewed: Unity `6000.3.23f1`, Test Framework `1.6.0`, package lock, ProjectSettings and two GUID-linked URP settings assets. Tactics after Milestone 018 remains the only pending harness result.
 
 ## Accepted architecture
 
@@ -63,10 +64,9 @@ Do not:
 ## Immediate next objective
 
 1. Import the current implementation branch/bundle on Juan's Windows checkout if needed.
-2. Run `scripts/run-unity-bootstrap-windows.ps1` with Unity 6.3 LTS installed.
-3. Record Unity compilation, Edit Mode test results and the two replay hashes.
-4. Only after the bootstrap passes, implement the cyborg deployment/resource experiment engine-free with exact forecasts.
-5. Use its evidence to approve, revise or reject the proposal before authoring the three modular visual configurations.
+2. Confirm the Tactics harness passes under .NET 8 / C# 11.
+3. Implement the cyborg deployment/resource experiment engine-free with exact forecasts.
+4. Use its evidence to approve, revise or reject the proposal before authoring the three modular visual configurations.
 
 ## Resume prompt
 

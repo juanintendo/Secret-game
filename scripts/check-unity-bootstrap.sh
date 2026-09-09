@@ -9,9 +9,10 @@ rg -q '<LangVersion>11\.0</LangVersion>' Directory.Build.props
 
 jq -e '.dependencies["com.unity.render-pipelines.universal"] == "17.3.0"' \
   "$project/Packages/manifest.json" >/dev/null
-jq -e '.dependencies["com.unity.test-framework"] == "1.5.1"' \
+jq -e '.dependencies["com.unity.test-framework"] == "1.6.0"' \
   "$project/Packages/manifest.json" >/dev/null
-rg -qx 'm_EditorVersion: 6000\.3\.0f1' "$project/ProjectSettings/ProjectVersion.txt"
+rg -qx 'm_EditorVersion: 6000\.3\.23f1' "$project/ProjectSettings/ProjectVersion.txt"
+jq empty "$project/Packages/packages-lock.json"
 rg -qx -- '-langversion:10\.0' "$project/Assets/csc.rsp"
 rg -qx -- '-nullable:enable' "$project/Assets/csc.rsp"
 rg -q 'UnityIsExternalInit\.cs' scripts/sync-unity-kernel.ps1

@@ -1,5 +1,5 @@
 param(
-    [string]$UnityEditorPath = "C:\Program Files\Unity\Hub\Editor\6000.3.0f1\Editor\Unity.exe"
+    [string]$UnityEditorPath = "C:\Program Files\Unity\Hub\Editor\6000.3.23f1\Editor\Unity.exe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -13,10 +13,10 @@ $logPath = Join-Path $resultRoot "unity-editor.log"
 
 if (-not (Test-Path -LiteralPath $UnityEditorPath)) {
     throw @"
-Unity 6000.3.0f1 was not found at:
+Unity 6000.3.23f1 was not found at:
 $UnityEditorPath
 
-Install Unity 6.3 LTS 6000.3.0f1 through Unity Hub, or rerun with:
+Install Unity 6.3 LTS 6000.3.23f1 through Unity Hub, or rerun with:
 -UnityEditorPath "C:\full\path\to\Unity.exe"
 "@
 }
