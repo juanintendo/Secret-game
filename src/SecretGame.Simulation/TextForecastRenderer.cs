@@ -40,6 +40,38 @@ public sealed class TextForecastRenderer
         return text.ToString();
     }
 
+    public string RenderTeachingState(CombatState state)
+    {
+        var occupied = new Dictionary<Cell, char>();
+        foreach (var entity in state.Entities.Values.Where(entity => entity.Flags.Spatial))
+        {
+            var marker = TeachingMarker(entity.Id);
+            foreach (var cell in entity.Footprint.OccupiedCells(entity.Anchor)) occupied[cell] = marker;
+        }
+
+        var text = new StringBuilder();
+        text.Append("     X ");
+        for (var x = 0; x < state.Map.Width; x++) text.Append($"{x,2} ");
+        text.AppendLine();
+        text.AppendLine("   Y   " + new string('-', state.Map.Width * 3));
+        for (var y = 0; y < state.Map.Height; y++)
+        {
+            text.Append($"{y,3} | ");
+            for (var x = 0; x < state.Map.Width; x++)
+            {
+                var cell = new Cell(x, y);
+                text.Append(occupied.TryGetValue(cell, out var marker)
+                    ? $" {marker} "
+                    : state.Map.GetTerrain(cell).Blocked ? " # " : " . ");
+            }
+            text.AppendLine();
+        }
+
+        text.AppendLine("Legend: H Human | C Cyborg | M Mech | S Synthetic");
+        text.Append("        W Warden | K Striker | T RelayTech | # wall | . empty");
+        return text.ToString();
+    }
+
     private static string RenderEvent(CombatEvent payload) => payload switch
     {
         ActionPointsSpentEvent spent =>
@@ -94,5 +126,17 @@ public sealed class TextForecastRenderer
         if (id == RelayYardScenario.Mech) return 'M';
         if (id == RelayYardScenario.Synthetic) return 'S';
         return 'E';
+    }
+
+    private static char TeachingMarker(EntityId id)
+    {
+        if (id == RelayYardScenario.Human) return 'H';
+        if (id == RelayYardScenario.Cyborg) return 'C';
+        if (id == RelayYardScenario.Mech) return 'M';
+        if (id == RelayYardScenario.Synthetic) return 'S';
+        if (id == RelayYardScenario.Warden) return 'W';
+        if (id == RelayYardScenario.Striker) return 'K';
+        if (id == RelayYardScenario.RelayTech) return 'T';
+        return '?';
     }
 }

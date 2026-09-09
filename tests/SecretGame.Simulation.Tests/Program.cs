@@ -469,6 +469,16 @@ static void TextRendererShowsWindows()
         "Text forecast omitted opened tactical window.");
     Assert(text.Contains("AP Human: 2 -> 1", StringComparison.Ordinal),
         "Text forecast omitted action-point cost.");
+
+    var teaching = new TextForecastRenderer().RenderTeachingState(state);
+    Assert(teaching.Contains("X  0  1  2  3", StringComparison.Ordinal),
+        "Teaching map omitted zero-based X coordinates.");
+    Assert(teaching.Contains("  0 |", StringComparison.Ordinal),
+        "Teaching map omitted zero-based Y coordinates.");
+    Assert(teaching.Contains("W Warden | K Striker | T RelayTech", StringComparison.Ordinal),
+        "Teaching map did not distinguish enemy identities.");
+    Assert(teaching.Contains("M Mech", StringComparison.Ordinal),
+        "Teaching map omitted the mech legend.");
 }
 
 static void ResolverEnforcesLineOfSight()
