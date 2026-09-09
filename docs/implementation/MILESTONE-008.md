@@ -28,4 +28,6 @@ This milestone repairs the test protocol without changing simulation rules, Rela
 
 ## Gate rule
 
-Gate A remains open until the repaired test scores at least 4/5. A passing retest closes the last Gate A row and authorizes the Unity 6 URP/Astra visual spike. A failing informed retest is genuine evidence that the rules or forecast presentation require another iteration.
+Gate A required at least 4/5 on the repaired test. Juan scored **4/5 on Windows on 2026-09-09**, closing the last row and authorizing the Unity 6 URP/Astra visual spike.
+
+The single miss is useful qualitative evidence. `Set Cyborg / Mech to Docked` was first understood as a mech combat-state change in which pilot and mech separated, rather than as the pilot entering the mech and becoming non-spatial. The simulation result is correct; the player-facing verb is ambiguous. Unity presentation must describe this transition as **Board Mech** (entering `Docked`) or **Deploy Remotely** (entering the two-spatial-entity mode), with the occupancy consequence shown before commitment. This is a presentation recommendation, not a renamed kernel enum or new canon ruling.

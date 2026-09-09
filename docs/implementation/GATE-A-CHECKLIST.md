@@ -12,8 +12,8 @@ No Unity/Astra production work begins until this table is honestly green or an e
 | Action vocabulary | at most 8 archetypes cover at least 90% | nine representative specialty abilities use eight motion archetypes (100% coverage of authored sample) | `PASS — REPRESENTATIVE SET` |
 | Mech footprint tests 1, 2, 4 | all pass at `2×2` | deliberate 1-tile/2-tile doors, four 14×14 pathfinding variants, rectangular collision and four mass classes pass | `PASS — HEADLESS` |
 | Encounter at both footprints | `1×1` and `2×2` characterized | same 21 commands legal; 35 event types each; mech paths 3 vs 4 steps; hashes recorded | `PASS — LOCAL` |
-| Legibility | outside player predicts created conditions in at least 4 of 5 plays | First Windows attempt scored 0/5 because the harness required internal token syntax without teaching coordinates, entity names, Docked semantics, or window rules. This is recorded as a harness/UX failure, not player failure. Milestone 008 replaces it with an informed numbered-choice test. | `RETEST REQUIRED` |
+| Legibility | outside player predicts created conditions in at least 4 of 5 plays | Juan scored 4/5 on the repaired informed Windows test on 2026-09-09. The single miss identified `Docked` as presentation language that can be misread as a combat stance rather than pilot embarkation. | `PASS — EXTERNAL 4/5` |
 
 ## Current transition rule
 
-All technical/headless rows pass, including cross-machine determinism. The transition to Unity/Astra now requires one external confirmation: at least 4/5 on the repaired informed legibility test. Camera framing, animation clearance and remote-control readability are the first Unity/Astra visual-spike gates, not claims made by the headless kernel.
+**Gate A closed on 2026-09-09.** All technical/headless rows pass, replay hashes match across Linux and Juan's Windows machine, and the repaired external legibility test passed 4/5. Unity/Astra week 2 is authorized. Camera framing, animation clearance and remote-control readability remain visual-spike gates, not claims made by the headless kernel.

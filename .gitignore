@@ -32,6 +32,8 @@ crashlytics-build.properties
 # Generated content mirrors (regenerable from content/ JSON)
 Assets/Generated/
 Assets/Generated.meta
+/unity/SecretGame/Assets/Generated/
+/unity/SecretGame/Assets/Generated.meta
 
 # Test + capture output
 TestResults/

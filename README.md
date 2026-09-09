@@ -6,7 +6,7 @@ Creative direction: Juan + Mina. Technical direction: Mina.
 
 ## Status
 
-Implementation spike in progress. The engine-free deterministic simulation began on 2026-09-09; Unity 6 LTS + URP remains **provisional** until the technical-art spike passes.
+Implementation spike in progress. The engine-free deterministic simulation began on 2026-09-09 and **Gate A passed on 2026-09-09** with cross-machine replay parity and external forecast legibility at 4/5. Unity 6.3 LTS + URP now enters its technical-art spike and remains **provisional** until that spike passes.
 
 ## Layout
 
@@ -17,6 +17,7 @@ docs/consultation/ Final preproduction consultation and implementation handoff
 docs/implementation/ Implementation milestones and accepted technical rulings
 src/             Engine-free simulation source
 tests/           Executable simulation verification harnesses
+unity/SecretGame/ Provisional Unity 6.3 LTS + URP technical-art host
 docs/pipeline/   Production pipeline artifacts (perf budgets, swatches, shot registry)
 .claude/skills/  Project skills that load the canon and the working rules into any agent session
 CLAUDE.md        Agent entry point and skill routing
@@ -52,7 +53,13 @@ Run the current text-mode encounter with:
 dotnet run --project tools/SecretGame.RelayYard
 ```
 
-The live transition criteria for Unity/Astra are tracked in `docs/implementation/GATE-A-CHECKLIST.md`.
+Gate A is closed. Before opening the Unity project, generate its verified kernel mirror:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\sync-unity-kernel.ps1
+```
+
+Then open `unity/SecretGame` with Unity 6.3 LTS and run Edit Mode tests. The Unity/Astra transition evidence is tracked in `docs/implementation/GATE-A-CLOSEOUT.md` and `docs/implementation/MILESTONE-009.md`.
 
 ## Canon home
 

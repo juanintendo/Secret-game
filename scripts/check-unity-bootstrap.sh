@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project="unity/SecretGame"
+
+jq -e '.dependencies["com.unity.render-pipelines.universal"] == "17.3.0"' \
+  "$project/Packages/manifest.json" >/dev/null
+jq -e '.dependencies["com.unity.test-framework"] == "1.5.1"' \
+  "$project/Packages/manifest.json" >/dev/null
+rg -qx 'm_EditorVersion: 6000\.3\.0f1' "$project/ProjectSettings/ProjectVersion.txt"
+
+while IFS= read -r -d '' assembly_definition; do
+  jq empty "$assembly_definition"
+done < <(find "$project/Assets" -name '*.asmdef' -print0)
+
+while IFS= read -r asset; do
+  if [[ ! -f "$asset.meta" ]]; then
+    echo "Missing Unity metadata: $asset.meta" >&2
+    exit 1
+  fi
+done < <(find "$project/Assets" -type f ! -name '*.meta')
+
+if rg -n '\bCombatState\b' "$project/Assets/Game/Presentation"; then
+  echo "Presentation API references authoritative CombatState." >&2
+  exit 1
+fi
+
+if ! git check-ignore -q "$project/Assets/Generated/probe.cs"; then
+  echo "Generated Unity kernel mirror is not ignored." >&2
+  exit 1
+fi
+
+echo "Unity bootstrap structure clean."
