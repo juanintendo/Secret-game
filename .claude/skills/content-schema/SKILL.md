@@ -139,12 +139,13 @@ Patches are applied deterministically in talent-id order at loadout-snapshot tim
 
 **Every condition must be displayable as a badge.** A condition the player cannot see is not a condition; it is a trap. See the forecast requirements in `combat-kernel` §2 and §9.
 
-## 5. Gear
+## 5. Gear and weapon — separate record types
 
 Few, named, consequential. **No affixes. No random drops. No +1 upgrades.**
 
 ```jsonc
-{ "id": "gear.cyb.siege-brace", "slot": "signature-weapon", "owner": "cyborg",
+{ "id": "gear.cyb.siege-brace", "slotIndex": 2, "owner": "cyborg",
+  "setId": "set.cyb.siege",
   "grants": [ { "abilityId": "cyb.remote.siege-shot" } ],
   "patches": [ { "target": "cyb.*", "op": "add", "path": "cost.ap", "value": 0 } ],
   "drawback": { "type": "ApplyStatus", "statusId": "st.braced-immobile",
@@ -152,7 +153,7 @@ Few, named, consequential. **No affixes. No random drops. No +1 upgrades.**
   "silhouetteImpact": "approved:hardpoint-shoulder-L" }
 ```
 
-Slots: `signature-weapon` · `frame-component` · `utility-module` · `character-signature` · `mech-hardpoint` (cyborg only).
+Every protagonist equips exactly **four gear records plus one separate character-specific weapon record**. Gear uses provisional `slotIndex` values `0..3` until Juan names Q26; do not invent public slot names in code or UI. A cyborg `mech-hardpoint` is a gear role occupying one of those four indices, never a fifth gear slot. `WeaponDefinition` has no `setId` field at all and weapons never contribute to `2+2` or `4/4` thresholds.
 
 **Identity-preservation rule (validator-enforced):** gear may modify a character's own tags and archetypes. Gear may **never** grant another character's tag-creation verb. Only the human creates `Isolated`; only the cyborg creates `Guarded`-for-others; only the synthetic creates `Hacked` / `Conductive`.
 
@@ -180,6 +181,9 @@ Every enemy must publish its **intent** before its activation (icon + threatened
 10. Any content file fails its JSON Schema.
 11. A `Displace` effect omits `collisionRule`, or uses a depth > 0.
 12. Visual gear references an unapproved silhouette variant.
+13. An equipped loadout does not contain exactly four gear records in four distinct slot indices plus one weapon.
+14. A weapon JSON contains `setId`, or any set evaluator reads weapon data.
+15. The gear slot-index enum contains anything other than four values.
 
 ## 8. Budgets — treat these as hard caps until Juan/Mina raise them
 

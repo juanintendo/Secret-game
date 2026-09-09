@@ -1,0 +1,5 @@
+[
+  { "id": "reaction.guard", "version": 1, "owner": "universal", "trigger": "ally-targeted", "responseAbilityId": "core.guard", "perEventLimit": 1 },
+  { "id": "reaction.bulwark-intercept", "version": 1, "owner": "cyborg", "trigger": "ally-damaged", "responseAbilityId": "cyborg.bulwark.intercept", "perEventLimit": 1 },
+  { "id": "reaction.gunslinger-shot", "version": 1, "owner": "human", "trigger": "enemy-moves", "responseAbilityId": "human.gunslinger.reaction-shot", "perEventLimit": 1 }
+]

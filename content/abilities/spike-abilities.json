@@ -1,0 +1,11 @@
+[
+  { "id": "human.dispatch.break-line", "version": 1, "owner": "human", "specialty": "dispatch", "costAp": 1, "motionArchetype": "human-strike", "effects": [{ "type": "damage", "amount": 3 }, { "type": "displace", "distance": 1, "collisionRule": "depth0" }], "bossDegradation": [{ "type": "damage", "amount": 3 }] },
+  { "id": "human.con-girl.false-opening", "version": 1, "owner": "human", "specialty": "con-girl", "costAp": 1, "motionArchetype": "human-feint", "effects": [{ "type": "applyStatus", "status": "exposed", "duration": 1 }], "bossDegradation": [{ "type": "emitTag", "status": "pressure" }] },
+  { "id": "human.gunslinger.reaction-shot", "version": 1, "owner": "human", "specialty": "gunslinger", "costAp": 1, "motionArchetype": "human-shot", "effects": [{ "type": "damage", "amount": 2 }] },
+  { "id": "cyborg.bulwark.intercept", "version": 1, "owner": "cyborg", "specialty": "bulwark", "costAp": 1, "motionArchetype": "cyborg-intercept", "effects": [{ "type": "grantGuard", "amount": 2 }] },
+  { "id": "cyborg.remote-arsenal.salvo", "version": 1, "owner": "cyborg", "specialty": "remote-arsenal", "costAp": 2, "motionArchetype": "mech-salvo", "effects": [{ "type": "damage", "amount": 5 }] },
+  { "id": "cyborg.redline.anchor", "version": 1, "owner": "cyborg", "specialty": "redline", "costAp": 1, "motionArchetype": "cyborg-intercept", "effects": [{ "type": "applyStatus", "status": "anchored", "duration": 1 }], "bossDegradation": [{ "type": "grantGuard", "amount": 1 }] },
+  { "id": "synthetic.heartless.null-pulse", "version": 1, "owner": "synthetic", "specialty": "heartless", "costAp": 1, "motionArchetype": "syn-cast", "effects": [{ "type": "damage", "amount": 2 }, { "type": "applyStatus", "status": "isolated", "duration": 1 }], "bossDegradation": [{ "type": "damage", "amount": 2 }] },
+  { "id": "synthetic.ghost-surgery.phase-cut", "version": 1, "owner": "synthetic", "specialty": "ghost-surgery", "costAp": 1, "motionArchetype": "syn-hack", "effects": [{ "type": "removeStatus", "status": "guarded" }, { "type": "emitTag", "status": "breach" }] },
+  { "id": "synthetic.spell-slinger.conduit", "version": 1, "owner": "synthetic", "specialty": "spell-slinger", "costAp": 2, "motionArchetype": "syn-conduct", "effects": [{ "type": "link", "duration": 1 }, { "type": "modifyInitiative", "amount": 1 }] }
+]

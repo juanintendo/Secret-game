@@ -1,0 +1,7 @@
+[
+  { "id": "gear.cyborg.anchor-brace", "version": 1, "owner": "cyborg", "slotIndex": "slot0", "setId": "anchor", "role": "frame-component" },
+  { "id": "gear.cyborg.anchor-plate", "version": 1, "owner": "cyborg", "slotIndex": "slot1", "setId": "anchor", "role": "mech-hardpoint" },
+  { "id": "gear.cyborg.relay-core", "version": 1, "owner": "cyborg", "slotIndex": "slot2", "setId": "relay", "role": "utility-module" },
+  { "id": "gear.cyborg.relay-link", "version": 1, "owner": "cyborg", "slotIndex": "slot3", "setId": "relay", "role": "character-signature" },
+  { "id": "gear.cyborg.loose-sink", "version": 1, "owner": "cyborg", "slotIndex": "slot2", "role": "utility-module" }
+]

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "array", "minItems": 3, "maxItems": 3,
+  "items": { "type": "object", "additionalProperties": false,
+    "required": ["id", "version", "owner", "trigger", "responseAbilityId", "perEventLimit"],
+    "properties": { "id": {"type":"string"}, "version":{"type":"integer","minimum":1}, "owner":{"type":"string"}, "trigger":{"type":"string"}, "responseAbilityId":{"type":"string"}, "perEventLimit":{"const":1} }
+  }
+}

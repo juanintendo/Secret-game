@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "array",
+  "items": { "type": "object", "additionalProperties": false,
+    "required": ["id", "version", "owner", "slotIndex"],
+    "properties": { "id":{"type":"string"}, "version":{"type":"integer","minimum":1}, "owner":{"type":"string"}, "slotIndex":{"enum":["slot0","slot1","slot2","slot3"]}, "setId":{"type":"string"}, "role":{"type":"string"} }
+  }
+}

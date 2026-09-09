@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array", "minItems": 9, "maxItems": 9,
+  "items": { "type": "object", "additionalProperties": false,
+    "required": ["id", "version", "owner", "specialty", "costAp", "motionArchetype", "effects"],
+    "properties": {
+      "id": { "type": "string" }, "version": { "type": "integer", "minimum": 1 },
+      "owner": { "enum": ["human", "cyborg", "synthetic"] }, "specialty": { "type": "string" },
+      "costAp": { "type": "integer", "minimum": 1, "maximum": 2 }, "motionArchetype": { "type": "string" },
+      "effects": { "$ref": "#/$defs/effects" }, "bossDegradation": { "$ref": "#/$defs/effects" }
+    }
+  },
+  "$defs": { "effects": { "type": "array", "minItems": 1, "items": { "type": "object" } } }
+}
