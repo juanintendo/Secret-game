@@ -14,6 +14,7 @@
 - Unity baseline is verified on Windows and pinned to Unity 6.3 LTS `6000.3.23f1` + URP `17.3.0`.
 - The source-controlled Unity bootstrap exists at `unity/SecretGame`; the authoritative kernel remains `src/SecretGame.Simulation`.
 - Windows Unity batch bootstrap passed 3/3 Edit Mode tests with exit code 0, Smart App Control enabled and Burst disabled only for the managed test process. Milestone 019 records the accepted generated baseline.
+- Windows subsequently confirmed Tactics **17/17** and a clean synchronized branch at `465eaa79ddd1a68224cce2d2d5d609733fa48084`. All baseline harnesses are closed.
 - The first Windows attempt synchronized 31/31 kernel files, then exposed a PowerShell runner defect: direct invocation of the GUI editor left `$LASTEXITCODE` unset. Milestone 011 replaces that mechanism with an explicit waited process handle. This is not yet Unity test evidence.
 - The next waited run reached compilation and exposed one compatibility mismatch: Unity selected C# 9 while the kernel uses C# 10 syntax. Milestone 012 adds a pinned `-langversion:10.0` compiler-response probe; Unity tests remain pending until that probe runs on Windows.
 - Windows evidence confirmed the C# 10 probe works. The next failure was the absent framework marker `IsExternalInit`, not rejected language syntax. Milestone 013 generates that marker only inside Unity's ignored kernel mirror and enables nullable annotations; tests remain pending.
@@ -63,11 +64,12 @@ Do not:
 
 ## Immediate next objective
 
-1. Import the current implementation branch/bundle on Juan's Windows checkout if needed.
-2. Confirm the Tactics harness passes under .NET 8 / C# 11.
-3. Implement the cyborg deployment/resource experiment engine-free with exact forecasts.
-4. Use its evidence to approve, revise or reject the proposal before authoring the three modular visual configurations.
+1. Import Milestone 020 on Juan's Windows checkout.
+2. Run Simulation, the new visual text experiment and Unity Edit Mode acceptance.
+3. Record whether the shared Charge/deployment loop is legible and structurally sound.
+4. Build the bounded queued-directive comparison; do not give the remote mech an independent activation.
+5. Use that evidence to approve, revise or reject the proposal before authoring modular visual configurations.
 
 ## Resume prompt
 
-> Continue Secret-game from `docs/continuity/PROJECT-CHECKPOINT-2026-09-09.md`. Load canon-guard, combat-kernel, content-schema and adversarial-review. Verify branch and HEAD first. Do not treat `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` as canon. The next gate is the Windows Unity bootstrap; after it passes, build the data-only cyborg/mech Charge and deployment experiment with forecast parity.
+> Continue Secret-game from `docs/continuity/PROJECT-CHECKPOINT-2026-09-09.md`. Load canon-guard, combat-kernel, content-schema and adversarial-review. Verify branch and HEAD first. Do not treat `docs/design/CYBORG-MECH-SYSTEM-PROPOSAL-001.md` as canon. Milestone 020 implements the data-only shared Charge and deployment experiment; verify it on Windows, then compare bounded queued directives without granting the remote mech a second activation.

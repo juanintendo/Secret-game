@@ -103,7 +103,11 @@ public sealed class TextForecastRenderer
         DamageRedirectedEvent redirected =>
             $"REDIRECT {RelayYardScenario.NameOf(redirected.OriginalTargetId)} -> {RelayYardScenario.NameOf(redirected.RedirectedTargetId)}",
         DeploymentModeChangedEvent deployment =>
-            $"MODE {RelayYardScenario.NameOf(deployment.PilotId)} + {RelayYardScenario.NameOf(deployment.MechId)}: {deployment.Mode}",
+            deployment.PilotDestination is null
+                ? $"MODE {RelayYardScenario.NameOf(deployment.PilotId)} + {RelayYardScenario.NameOf(deployment.MechId)}: {deployment.Mode}"
+                : $"MODE {RelayYardScenario.NameOf(deployment.PilotId)} + {RelayYardScenario.NameOf(deployment.MechId)}: {deployment.Mode}; pilot -> ({deployment.PilotDestination.Value.X},{deployment.PilotDestination.Value.Y})",
+        ResourceChangedEvent resource =>
+            $"RESOURCE {resource.ResourceName} ({resource.Reason}): {resource.Before} -> {resource.After} ({resource.Amount:+#;-#;0})",
         _ => payload.GetType().Name
     };
 

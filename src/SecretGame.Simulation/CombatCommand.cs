@@ -11,6 +11,26 @@ public sealed record SetDeploymentModeCommand(
     EntityId MechId,
     DeploymentMode Mode) : CombatCommand;
 
+public sealed record BoardMechCommand(
+    EntityId PilotId,
+    EntityId MechId,
+    int CostAp = 1) : CombatCommand;
+
+public sealed record RechargeMechCommand(
+    EntityId PilotId,
+    EntityId MechId,
+    ResourceId ResourceId,
+    int Amount,
+    int CostAp = 1) : CombatCommand;
+
+public sealed record DeployMechRemotelyCommand(
+    EntityId PilotId,
+    EntityId MechId,
+    Cell PilotDestination,
+    ResourceId ResourceId,
+    int ResourceCost,
+    int CostAp = 1) : CombatCommand;
+
 public sealed record BeginActivationCommand(EntityId EntityId) : CombatCommand;
 
 public sealed record EndActivationCommand(EntityId EntityId) : CombatCommand;

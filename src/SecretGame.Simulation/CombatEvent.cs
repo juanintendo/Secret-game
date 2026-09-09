@@ -32,7 +32,17 @@ public sealed record GuardDamagedEvent(
 public sealed record DeploymentModeChangedEvent(
     EntityId PilotId,
     EntityId MechId,
-    DeploymentMode Mode) : CombatEvent;
+    DeploymentMode Mode,
+    Cell? PilotDestination = null) : CombatEvent;
+
+public sealed record ResourceChangedEvent(
+    EntityId SourceId,
+    ResourceId ResourceId,
+    string ResourceName,
+    ResourceChangeReason Reason,
+    int Amount,
+    int Before,
+    int After) : CombatEvent;
 
 public sealed record ActionPointsSpentEvent(
     EntityId EntityId,

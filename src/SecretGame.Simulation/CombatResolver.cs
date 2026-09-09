@@ -17,6 +17,9 @@ public sealed class CombatResolver
             MoveCommand move => ResolveMove(state, move),
             DamageCommand damage => ResolveDamage(state, damage),
             SetDeploymentModeCommand deployment => ResolveDeployment(state, deployment),
+            BoardMechCommand board => ResolveBoardMech(state, board),
+            RechargeMechCommand recharge => ResolveRechargeMech(state, recharge),
+            DeployMechRemotelyCommand deploy => ResolveDeployMechRemotely(state, deploy),
             BeginActivationCommand begin => ResolveBeginActivation(state, begin),
             EndActivationCommand end => ResolveEndActivation(state, end),
             ApplyConditionCommand condition => ResolveCondition(state, condition),
@@ -317,6 +320,139 @@ public sealed class CombatResolver
         {
             new DeploymentModeChangedEvent(command.PilotId, command.MechId, command.Mode)
         };
+    }
+
+    private static IReadOnlyList<CombatEvent> ResolveBoardMech(
+        CombatState state,
+        BoardMechCommand command)
+    {
+        var pilot = RequirePilotMechPair(state, command.PilotId, command.MechId);
+        var mech = state.Require(command.MechId);
+        state.RequireLinkedPair(pilot.Id, mech.Id);
+        RequireActive(state, pilot.Id);
+        RequireActionCost(command.CostAp, "Board Mech");
+        RequireActionPoints(pilot, command.CostAp);
+        if (!pilot.Flags.Spatial || !pilot.Flags.Selectable)
+            throw new CommandRejectedException("Pilot must be deployed to Board Mech.");
+        if (!mech.Flags.Spatial || !mech.Flags.Selectable)
+            throw new CommandRejectedException("Mech must be deployed to receive its pilot.");
+        if (!AreAdjacent(pilot, mech))
+            throw new CommandRejectedException("Pilot must be adjacent to the mech to board it.");
+
+        return new CombatEvent[]
+        {
+            Spend(pilot, command.CostAp),
+            new DeploymentModeChangedEvent(pilot.Id, mech.Id, DeploymentMode.Docked)
+        };
+    }
+
+    private static IReadOnlyList<CombatEvent> ResolveRechargeMech(
+        CombatState state,
+        RechargeMechCommand command)
+    {
+        var pilot = RequirePilotMechPair(state, command.PilotId, command.MechId);
+        var mech = state.Require(command.MechId);
+        var resource = state.RequireResource(command.ResourceId);
+        RequireResourcePair(resource, pilot.Id, mech.Id);
+        RequireActive(state, mech.Id);
+        RequireActionCost(command.CostAp, "Recharge");
+        RequireActionPoints(mech, command.CostAp);
+        if (pilot.Flags != EntityFlags.Docked)
+            throw new CommandRejectedException("Recharge requires the pilot to be aboard the mech.");
+        if (command.Amount < 1)
+            throw new CommandRejectedException("Recharge amount must be positive.");
+        if (resource.Current >= resource.Maximum)
+            throw new CommandRejectedException($"{resource.Name} is already full.");
+        var remainingCapacity = resource.Maximum - resource.Current;
+        var after = command.Amount >= remainingCapacity
+            ? resource.Maximum
+            : resource.Current + command.Amount;
+
+        return new CombatEvent[]
+        {
+            Spend(mech, command.CostAp),
+            new ResourceChangedEvent(mech.Id, resource.Id, resource.Name, ResourceChangeReason.Recharge,
+                after - resource.Current, resource.Current, after)
+        };
+    }
+
+    private static IReadOnlyList<CombatEvent> ResolveDeployMechRemotely(
+        CombatState state,
+        DeployMechRemotelyCommand command)
+    {
+        var pilot = RequirePilotMechPair(state, command.PilotId, command.MechId);
+        var mech = state.Require(command.MechId);
+        var resource = state.RequireResource(command.ResourceId);
+        RequireResourcePair(resource, pilot.Id, mech.Id);
+        RequireActive(state, mech.Id);
+        RequireActionCost(command.CostAp, "Deploy Remotely");
+        RequireActionPoints(mech, command.CostAp);
+        if (pilot.Flags != EntityFlags.Docked)
+            throw new CommandRejectedException("Deploy Remotely requires the pilot to begin aboard the mech.");
+        if (command.ResourceCost < 1)
+            throw new CommandRejectedException("Remote deployment resource cost must be positive.");
+        if (resource.Current < command.ResourceCost)
+            throw new CommandRejectedException($"Deploy Remotely needs {command.ResourceCost} {resource.Name}.");
+        var deployedPilot = pilot with { Anchor = command.PilotDestination, Flags = EntityFlags.Active };
+        if (!AreAdjacent(deployedPilot, mech))
+            throw new CommandRejectedException("Pilot must deploy into a cell adjacent to the mech.");
+        RequireLegalDeploymentCell(state, deployedPilot, mech.Id);
+
+        return new CombatEvent[]
+        {
+            Spend(mech, command.CostAp),
+            new ResourceChangedEvent(mech.Id, resource.Id, resource.Name, ResourceChangeReason.Deployment,
+                -command.ResourceCost, resource.Current, resource.Current - command.ResourceCost),
+            new DeploymentModeChangedEvent(pilot.Id, mech.Id, DeploymentMode.Remote, command.PilotDestination)
+        };
+    }
+
+    private static CombatEntity RequirePilotMechPair(
+        CombatState state,
+        EntityId pilotId,
+        EntityId mechId)
+    {
+        if (pilotId == mechId)
+            throw new CommandRejectedException("Pilot and mech must have distinct stable IDs.");
+        var pilot = state.Require(pilotId);
+        state.Require(mechId);
+        return pilot;
+    }
+
+    private static void RequireActionCost(int costAp, string actionName)
+    {
+        if (costAp is < 1 or > 2)
+            throw new CommandRejectedException($"{actionName} AP cost must be one or two.");
+    }
+
+    private static void RequireResourcePair(SharedResourcePool resource, EntityId pilotId, EntityId mechId)
+    {
+        if (resource.OwnerId != pilotId || resource.PartnerId != mechId)
+            throw new CommandRejectedException($"{resource.Name} does not belong to pilot/mech pair {pilotId}/{mechId}.");
+    }
+
+    private static bool AreAdjacent(CombatEntity first, CombatEntity second)
+    {
+        foreach (var firstCell in first.Footprint.OccupiedCells(first.Anchor))
+        foreach (var secondCell in second.Footprint.OccupiedCells(second.Anchor))
+        {
+            var horizontal = Math.Abs(firstCell.X - secondCell.X);
+            var vertical = Math.Abs(firstCell.Y - secondCell.Y);
+            if (horizontal <= 1 && vertical <= 1 && horizontal + vertical > 0) return true;
+        }
+        return false;
+    }
+
+    private static void RequireLegalDeploymentCell(CombatState state, CombatEntity pilot, EntityId mechId)
+    {
+        var occupied = pilot.Footprint.OccupiedCells(pilot.Anchor).ToArray();
+        if (occupied.Any(cell => !state.Map.Contains(cell) || state.Map.GetTerrain(cell).Blocked))
+            throw new CommandRejectedException("Pilot deployment cell is blocked or outside the map.");
+        var overlaps = state.Entities.Values
+            .Where(entity => entity.Flags.Spatial && entity.Id != pilot.Id)
+            .Any(entity => entity.Footprint.OccupiedCells(entity.Anchor).Intersect(occupied).Any());
+        if (overlaps)
+            throw new CommandRejectedException($"Pilot deployment cell overlaps {mechId} or another entity.");
     }
 
     private static IReadOnlyList<CombatEvent> ResolveBeginActivation(

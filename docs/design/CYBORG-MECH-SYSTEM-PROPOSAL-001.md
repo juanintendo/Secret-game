@@ -150,3 +150,9 @@ If a Specialty is strongest while ignoring deployment and Charge, the system has
 6. How much of the Synth-link retrofit is visible without changing the mech's canonical identity.
 
 None of these questions blocks the current Unity bootstrap. They block implementation of this resource layer and production of Specialty-specific mech geometry.
+
+## 10. Milestone 020 implementation note
+
+The reusable state and resolver primitives are now implemented as a falsifying experiment without answering the open balance questions above. The values `3/8`, `+3`, `-2` and `1 AP` are scenario inputs only. They must not be copied into canon or authored content until play evidence supports them.
+
+The experiment also makes one provisional command-budget choice concrete: in Remote mode the mech remains spatial, selectable and targetable but has no independent initiative slot. This prevents a free fourth protagonist while leaving queued directives for the next experiment. It is evidence-producing scaffolding, not approval of the final Remote command model.

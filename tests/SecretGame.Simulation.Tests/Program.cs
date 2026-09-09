@@ -34,7 +34,14 @@ var tests = new (string Name, Action Run)[]
     ("Relay Yard script preserves forecast parity", RelayYardForecastParity),
     ("Relay Yard replay is deterministic", RelayYardReplayIsDeterministic),
     ("text renderer exposes tactical windows", TextRendererShowsWindows),
-    ("resolver rejects attacks through blocked LOS", ResolverEnforcesLineOfSight)
+    ("resolver rejects attacks through blocked LOS", ResolverEnforcesLineOfSight),
+    ("shared resource participates in clone and deterministic hash", SharedResourceIsAuthoritative),
+    ("Board Mech spends AP without refilling Charge", BoardMechIsForecastable),
+    ("Board Mech requires physical adjacency", BoardMechRequiresAdjacency),
+    ("docked recharge is bounded and forecastable", DockedRechargeIsBounded),
+    ("Deploy Remotely spends Charge and removes mech initiative", RemoteDeploymentUsesSharedBudget),
+    ("insufficient Charge rejects remote deployment atomically", InsufficientChargeIsAtomic),
+    ("legacy Gate A replay hashes remain unchanged", GateAHashesRemainStable)
 };
 
 var failures = 0;
@@ -491,6 +498,128 @@ static void ResolverEnforcesLineOfSight()
 
     Throws<CommandRejectedException>(() =>
         Resolver().Resolve(state, new DamageCommand(source.Id, target.Id, 1)));
+}
+
+static void SharedResourceIsAuthoritative()
+{
+    var state = CyborgMechExperimentScenario.Create();
+    var clone = state.Clone();
+    Assert(clone.Resources.Count == 1, "Clone lost the shared resource.");
+    Assert(clone.Resources[CyborgMechExperimentScenario.Charge].OwnerId == CyborgMechExperimentScenario.Pilot,
+        "Shared resource lost its pilot/mech identity owner.");
+    Assert(clone.DeterministicHash() == state.DeterministicHash(), "Clone changed resource-bearing state hash.");
+
+    var changed = new CombatState(state.Map, state.Rules, state.Entities.Values,
+        resources: new[] { new SharedResourcePool(CyborgMechExperimentScenario.Charge,
+            CyborgMechExperimentScenario.Pilot, CyborgMechExperimentScenario.Mech, "Charge", 4, 8) });
+    Assert(changed.DeterministicHash() != state.DeterministicHash(), "Resource value was absent from state hash.");
+}
+
+static void BoardMechIsForecastable()
+{
+    var state = CyborgMechExperimentScenario.Create();
+    var resolver = Resolver();
+    resolver.Resolve(state, new BeginActivationCommand(CyborgMechExperimentScenario.Pilot));
+    var command = new BoardMechCommand(CyborgMechExperimentScenario.Pilot, CyborgMechExperimentScenario.Mech);
+    var predicted = new CombatForecast(resolver).Evaluate(state, command);
+    var actual = resolver.Resolve(state, command);
+
+    Equal(predicted.Events, actual.Events);
+    Assert(predicted.ResultingStateHash == actual.ResultingStateHash, "Board forecast hash diverged.");
+    Assert(state.Resources[CyborgMechExperimentScenario.Charge].Current == 3,
+        "Boarding became a free battery refill.");
+    Assert(state.Entities[CyborgMechExperimentScenario.Pilot].Flags == EntityFlags.Docked,
+        "Board Mech did not remove the pilot from the map.");
+}
+
+static void DockedRechargeIsBounded()
+{
+    var state = DockedExperimentState(7);
+    var command = new RechargeMechCommand(CyborgMechExperimentScenario.Pilot,
+        CyborgMechExperimentScenario.Mech, CyborgMechExperimentScenario.Charge, 3);
+    var resolver = Resolver();
+    var predicted = new CombatForecast(resolver).Evaluate(state, command);
+    var actual = resolver.Resolve(state, command);
+
+    Equal(predicted.Events, actual.Events);
+    Assert(state.Resources[CyborgMechExperimentScenario.Charge].Current == 8,
+        "Recharge did not clamp at its maximum.");
+    var delta = (ResourceChangedEvent)actual.Events[1].Payload;
+    Assert(delta.Amount == 1 && delta.Before == 7 && delta.After == 8,
+        "Recharge forecast did not expose the exact bounded delta.");
+}
+
+static void BoardMechRequiresAdjacency()
+{
+    var baseState = CyborgMechExperimentScenario.Create();
+    var distantPilot = baseState.Entities[CyborgMechExperimentScenario.Pilot] with { Anchor = new Cell(0, 0) };
+    var state = new CombatState(baseState.Map, baseState.Rules,
+        new[] { distantPilot, baseState.Entities[CyborgMechExperimentScenario.Mech] }, distantPilot.Id,
+        baseState.Resources.Values);
+    var before = state.DeterministicHash();
+    var forecast = new CombatForecast(Resolver()).Evaluate(state,
+        new BoardMechCommand(CyborgMechExperimentScenario.Pilot, CyborgMechExperimentScenario.Mech));
+    Assert(!forecast.IsLegal, "Distant boarding was forecast as legal.");
+    Assert(state.DeterministicHash() == before, "Rejected distant boarding mutated state.");
+}
+
+static void RemoteDeploymentUsesSharedBudget()
+{
+    var state = DockedExperimentState(5);
+    var command = new DeployMechRemotelyCommand(CyborgMechExperimentScenario.Pilot,
+        CyborgMechExperimentScenario.Mech, new Cell(2, 2), CyborgMechExperimentScenario.Charge, 2);
+    var resolver = Resolver();
+    var predicted = new CombatForecast(resolver).Evaluate(state, command);
+    var actual = resolver.Resolve(state, command);
+
+    Equal(predicted.Events, actual.Events);
+    Assert(state.Resources[CyborgMechExperimentScenario.Charge].Current == 3,
+        "Remote deployment did not spend shared Charge.");
+    Assert(state.Entities[CyborgMechExperimentScenario.Pilot].Flags == EntityFlags.Active,
+        "Remote deployment did not restore the pilot to the map.");
+    Assert(state.Entities[CyborgMechExperimentScenario.Pilot].Anchor == new Cell(2, 2),
+        "Remote deployment did not place the pilot at the forecast destination.");
+    Assert(state.Entities[CyborgMechExperimentScenario.Mech].Flags == EntityFlags.RemoteControlled,
+        "Remote mech incorrectly retained an unrestricted initiative slot.");
+    var text = new TextForecastRenderer().RenderForecast(predicted);
+    Assert(text.Contains("RESOURCE Charge (Deployment): 5 -> 3 (-2)", StringComparison.Ordinal),
+        "Text forecast omitted the exact Charge spend.");
+    Assert(text.Contains("pilot -> (2,2)", StringComparison.Ordinal),
+        "Text forecast omitted the pilot deployment destination.");
+}
+
+static void InsufficientChargeIsAtomic()
+{
+    var state = DockedExperimentState(1);
+    var before = state.DeterministicHash();
+    var forecast = new CombatForecast(Resolver()).Evaluate(state,
+        new DeployMechRemotelyCommand(CyborgMechExperimentScenario.Pilot,
+            CyborgMechExperimentScenario.Mech, new Cell(2, 2), CyborgMechExperimentScenario.Charge, 2));
+
+    Assert(!forecast.IsLegal, "Insufficient Charge was forecast as legal.");
+    Assert(state.DeterministicHash() == before && state.Events.Count == 0,
+        "Rejected deployment partially mutated authoritative state.");
+}
+
+static void GateAHashesRemainStable()
+{
+    var replay = new CombatReplay(Resolver());
+    var one = replay.Run(RelayYardScenario.Create(new Footprint(1, 1)), RelayYardScenario.ScriptedCommands());
+    var two = replay.Run(RelayYardScenario.Create(new Footprint(2, 2)), RelayYardScenario.ScriptedCommands());
+    Assert(one.FinalStateHash == "716BE2E159FBB184B422C33910A6A0513FEF8B034D53E531F76E8A2BAACAF0B4",
+        "1x1 Gate A replay hash changed.");
+    Assert(two.FinalStateHash == "533CEDD457740A8604C19265EFEF864E361325152A10777E32C1C72D62260689",
+        "2x2 Gate A replay hash changed.");
+}
+
+static CombatState DockedExperimentState(int charge)
+{
+    var baseState = CyborgMechExperimentScenario.Create();
+    var pilot = baseState.Entities[CyborgMechExperimentScenario.Pilot] with { Flags = EntityFlags.Docked };
+    var mech = baseState.Entities[CyborgMechExperimentScenario.Mech] with { Flags = EntityFlags.Active };
+    return new CombatState(baseState.Map, baseState.Rules, new[] { pilot, mech }, mech.Id,
+        new[] { new SharedResourcePool(CyborgMechExperimentScenario.Charge,
+            CyborgMechExperimentScenario.Pilot, CyborgMechExperimentScenario.Mech, "Charge", charge, 8) });
 }
 
 static CombatResolver Resolver() => new();

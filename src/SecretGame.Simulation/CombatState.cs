@@ -5,17 +5,20 @@ namespace SecretGame.Simulation;
 public sealed class CombatState
 {
     private readonly SortedDictionary<EntityId, CombatEntity> _entities;
+    private readonly SortedDictionary<ResourceId, SharedResourcePool> _resources;
     private readonly List<ResolvedEvent> _events;
 
     public CombatState(
         BattleMap map,
         CombatRules rules,
         IEnumerable<CombatEntity> entities,
-        EntityId? activeEntityId = null)
+        EntityId? activeEntityId = null,
+        IEnumerable<SharedResourcePool>? resources = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         Rules = rules ?? throw new ArgumentNullException(nameof(rules));
         _entities = new SortedDictionary<EntityId, CombatEntity>();
+        _resources = new SortedDictionary<ResourceId, SharedResourcePool>();
         _events = new List<ResolvedEvent>();
         var occupied = new HashSet<Cell>();
         foreach (var entity in entities)
@@ -40,9 +43,19 @@ public sealed class CombatState
         if (activeEntityId is not null && !_entities.ContainsKey(activeEntityId.Value))
             throw new ArgumentException("Active entity ID is absent from state.", nameof(activeEntityId));
         ActiveEntityId = activeEntityId;
+        foreach (var resource in resources ?? Array.Empty<SharedResourcePool>())
+        {
+            if (!_resources.TryAdd(resource.Id, resource))
+                throw new ArgumentException($"Duplicate resource ID {resource.Id}.", nameof(resources));
+            if (!_entities.ContainsKey(resource.OwnerId))
+                throw new ArgumentException($"Resource {resource.Id} owner {resource.OwnerId} is absent.", nameof(resources));
+            if (!_entities.ContainsKey(resource.PartnerId) || resource.PartnerId == resource.OwnerId)
+                throw new ArgumentException($"Resource {resource.Id} has an invalid partner {resource.PartnerId}.", nameof(resources));
+        }
     }
 
     public IReadOnlyDictionary<EntityId, CombatEntity> Entities => _entities;
+    public IReadOnlyDictionary<ResourceId, SharedResourcePool> Resources => _resources;
     public IReadOnlyList<ResolvedEvent> Events => _events;
     public BattleMap Map { get; }
     public CombatRules Rules { get; }
@@ -50,7 +63,7 @@ public sealed class CombatState
 
     public CombatState Clone()
     {
-        var clone = new CombatState(Map, Rules, _entities.Values, ActiveEntityId);
+        var clone = new CombatState(Map, Rules, _entities.Values, ActiveEntityId, _resources.Values);
         clone._events.AddRange(_events);
         return clone;
     }
@@ -59,6 +72,17 @@ public sealed class CombatState
         _entities.TryGetValue(id, out var entity)
             ? entity
             : throw new CommandRejectedException($"Unknown entity ID {id}.");
+
+    internal SharedResourcePool RequireResource(ResourceId id) =>
+        _resources.TryGetValue(id, out var resource)
+            ? resource
+            : throw new CommandRejectedException($"Unknown resource ID {id}.");
+
+    internal void RequireLinkedPair(EntityId ownerId, EntityId partnerId)
+    {
+        if (!_resources.Values.Any(resource => resource.OwnerId == ownerId && resource.PartnerId == partnerId))
+            throw new CommandRejectedException($"Entities {ownerId}/{partnerId} are not a linked resource pair.");
+    }
 
     internal ResolvedEvent Apply(CombatEvent payload)
     {
@@ -90,9 +114,23 @@ public sealed class CombatState
                 var mech = Require(deployment.MechId);
                 _entities[deployment.PilotId] = pilot with
                 {
-                    Flags = deployment.Mode == DeploymentMode.Docked ? EntityFlags.Docked : EntityFlags.Active
+                    Flags = deployment.Mode == DeploymentMode.Docked ? EntityFlags.Docked : EntityFlags.Active,
+                    Anchor = deployment.PilotDestination ?? pilot.Anchor
                 };
-                _entities[deployment.MechId] = mech with { Flags = EntityFlags.Active };
+                _entities[deployment.MechId] = mech with
+                {
+                    Flags = deployment.Mode == DeploymentMode.Remote
+                        ? EntityFlags.RemoteControlled
+                        : EntityFlags.Active
+                };
+                break;
+            case ResourceChangedEvent resourceChanged:
+                var resource = RequireResource(resourceChanged.ResourceId);
+                if (resource.Current != resourceChanged.Before)
+                    throw new InvalidOperationException("Resource event before-value does not match authoritative state.");
+                if (!string.Equals(resource.Name, resourceChanged.ResourceName, StringComparison.Ordinal))
+                    throw new InvalidOperationException("Resource event name does not match authoritative state.");
+                _resources[resourceChanged.ResourceId] = resource.WithCurrent(resourceChanged.After);
                 break;
             case ActionPointsSpentEvent spent:
                 var spender = Require(spent.EntityId);
@@ -181,6 +219,21 @@ public sealed class CombatState
                     writer.Write((int)condition.Kind);
                     writer.Write(condition.RemainingActivations);
                     writer.Write(condition.SourceId.Value);
+                }
+            }
+            if (_resources.Count > 0)
+            {
+                writer.Write(0x52535243);
+                writer.Write(_resources.Count);
+                foreach (var pair in _resources)
+                {
+                    var resource = pair.Value;
+                    writer.Write(resource.Id.Value);
+                    writer.Write(resource.OwnerId.Value);
+                    writer.Write(resource.PartnerId.Value);
+                    writer.Write(resource.Name);
+                    writer.Write(resource.Current);
+                    writer.Write(resource.Maximum);
                 }
             }
         }

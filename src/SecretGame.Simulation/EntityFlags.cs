@@ -8,4 +8,5 @@ public readonly record struct EntityFlags(
 {
     public static EntityFlags Active { get; } = new(true, true, true, true);
     public static EntityFlags Docked { get; } = new(false, false, false, false);
+    public static EntityFlags RemoteControlled { get; } = new(true, true, true, false);
 }
