@@ -14,6 +14,7 @@
 - Unity baseline is provisionally pinned to Unity 6.3 LTS `6000.3.0f1` + URP `17.3.0`.
 - The source-controlled Unity bootstrap exists at `unity/SecretGame`; the authoritative kernel remains `src/SecretGame.Simulation`.
 - At this checkpoint, Juan has not yet reported a successful Windows Unity batch bootstrap for Milestone 009. Do not claim that Unity compilation or Edit Mode tests passed until that evidence is returned.
+- The first Windows attempt synchronized 31/31 kernel files, then exposed a PowerShell runner defect: direct invocation of the GUI editor left `$LASTEXITCODE` unset. Milestone 011 replaces that mechanism with an explicit waited process handle. This is not yet Unity test evidence.
 
 ## Accepted architecture
 

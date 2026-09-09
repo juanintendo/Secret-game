@@ -25,16 +25,28 @@ Install Unity 6.3 LTS 6000.3.0f1 through Unity Hub, or rerun with:
 
 New-Item -ItemType Directory -Force -Path $resultRoot | Out-Null
 Write-Host "Running Unity 6.3 LTS bootstrap Edit Mode tests..."
-& $UnityEditorPath `
-    -batchmode `
-    -nographics `
-    -projectPath $projectPath `
-    -runTests `
-    -testPlatform editmode `
-    -testResults $resultPath `
-    -logFile $logPath
+$unityArguments = @(
+    "-batchmode",
+    "-nographics",
+    "-projectPath", $projectPath,
+    "-runTests",
+    "-testPlatform", "editmode",
+    "-testResults", $resultPath,
+    "-logFile", $logPath
+)
 
-$unityExitCode = $LASTEXITCODE
+# Unity.exe is a Windows GUI executable. Windows PowerShell may return from a
+# direct invocation without setting $LASTEXITCODE, even though the editor keeps
+# running. Start-Process gives us an explicit process handle and waits for the
+# real editor exit code instead of relying on shell-global state.
+$unityProcess = Start-Process `
+    -FilePath $UnityEditorPath `
+    -ArgumentList $unityArguments `
+    -Wait `
+    -PassThru `
+    -NoNewWindow
+
+$unityExitCode = $unityProcess.ExitCode
 if ($unityExitCode -ne 0) {
     Write-Error "Unity bootstrap failed with exit code $unityExitCode. Log: $logPath"
     exit $unityExitCode
