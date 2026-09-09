@@ -1,8 +1,10 @@
 # Tactical Foundation Checkpoint 001
 
-**Status:** conditionally complete; awaiting the captured Unity **7/7** result for Milestone 023.
+**Status:** `ACCEPTED`.
 
-**Candidate commit:** `e44c69a906027106d97d9d0116d07aa46ca0654f`.
+**Accepted implementation commit:** `e44c69a906027106d97d9d0116d07aa46ca0654f`.
+
+**Acceptance evidence:** Windows Simulation **54/54**, Tactics **18/18**, Specialty Pressure `PASS`, Unity Edit Mode **7/7**, **36/36** synchronized kernel sources, zero failed or skipped Unity tests.
 
 ## What this checkpoint proves
 
@@ -24,9 +26,7 @@ Windows evidence already received for Milestone 023:
 - Simulation **54/54**;
 - Tactics **18/18** through the signed `dotnet` host;
 - Specialty Pressure experiment `PASS` with all six expected outcome rows;
-- Unity synchronized **36/36** kernel source files before starting its final run.
-
-The Unity result is not recorded as passed until its XML reports `total=7 passed=7 failed=0 result=Passed`.
+- Unity synchronized **36/36** kernel source files and reported `total=7 passed=7 failed=0 skipped=0 result=Passed`.
 
 ## What this checkpoint does not prove
 
@@ -60,4 +60,4 @@ Any visual requirement that appears to need one of those violations must be retu
 
 ## Exit condition
 
-When Unity reports **7/7**, update this document to `ACCEPTED`, record the exact commit and Windows evidence, then create the visual-spike branch from that commit. No merge into `main` is required to begin the isolated visual spike.
+Satisfied. Begin Visual Spike 001 from the accepted foundation plus its documentation-only handoff. No merge into `main` is required to begin the isolated visual branch.

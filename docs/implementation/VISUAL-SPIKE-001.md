@@ -1,6 +1,6 @@
 # Visual Spike 001 — canonical combat beauty proof
 
-**Status:** ready to begin after Tactical Foundation Checkpoint 001 records Unity **7/7**.
+**Status:** `READY TO BEGIN`; Tactical Foundation Checkpoint 001 is accepted with Unity **7/7**.
 
 **Engine:** Unity 6.3 LTS `6000.3.23f1`, URP 17.3.
 

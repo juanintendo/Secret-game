@@ -1,10 +1,14 @@
 # Milestone 023 — Specialty pressure: stay versus transition
 
-**Status:** implemented in source; awaiting one consolidated Windows verification.
+**Status:** accepted on Windows.
 
 **Design authority:** experiment only. Policies, actions, costs and names remain `RECOMMENDATION — NOT CANON`.
 
 **Parent baseline:** `7b4d3bec6c0a98d84a650d450a17c591ade3a291`.
+
+**Accepted commit:** `e44c69a906027106d97d9d0116d07aa46ca0654f`.
+
+Windows evidence: Simulation **54/54**, Tactics **18/18** through the signed `dotnet` host, Specialty Pressure `PASS`, Unity Edit Mode **7/7**, 36 synchronized kernel sources, zero failed or skipped Unity tests.
 
 ## Question under test
 
@@ -69,4 +73,4 @@ Accept only when Simulation passes **54/54**, Tactics **18/18**, the pressure ha
 
 ## Next decision
 
-The table held in managed Windows execution. After the final Unity result is captured, the project opens Visual Spike 001 so camera, scale and animation-clearance evidence can inform the eventual spatial-range test. Reusable attack range and threatened-cell measurement remain the next combat experiment; they are deferred, not cancelled.
+The table held in managed Windows execution and Unity parity passed. The project now opens Visual Spike 001 so camera, scale and animation-clearance evidence can inform the eventual spatial-range test. Reusable attack range and threatened-cell measurement remain the next combat experiment; they are deferred, not cancelled.
